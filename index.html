@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPTV Web Player</title>
+    
+    <!-- Shaka Player from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/controls.min.css">
+
+    <style>
+        body { text-align: center; background-color: #000; color: #fff; font-family: Arial, sans-serif; }
+        #video-container { width: 80%; max-width: 900px; margin: auto; position: relative; }
+        video { width: 100%; }
+    </style>
+</head>
+<body>
+
+    <h1>IPTV Streaming with Shaka Player UI</h1>
+    <div id="video-container" class="shaka-video-container">
+        <video id="video" class="shaka-video" autoplay controls></video>
+        <div id="controls" class="shaka-controls-container"></div>
+    </div>
+
+    <script>
+        async function initPlayer() {
+            const manifestUri = "https://raw.githubusercontent.com/Itschan125zxc/Burnek/refs/heads/main/Chano-UnliCable%20(2).m3u8"; // Replace with your IPTV stream URL (.mpd or .m3u8)
+
+            const video = document.getElementById("video");
+            const uiContainer = document.getElementById("video-container");
+            const controls = document.getElementById("controls");
+
+            // Initialize Shaka Player with UI controls
+            const ui = new shaka.ui.Overlay(new shaka.Player(video), uiContainer, video);
+            const controlsInstance = ui.getControls();
+            const player = controlsInstance.getPlayer();
+
+            player.addEventListener("error", (event) => {
+                console.error("Error code", event.detail.code, "object", event.detail);
+            });
+
+            try {
+                await player.load(manifestUri);
+                console.log("The video has been loaded successfully with UI!");
+            } catch (e) {
+                console.error("Error loading the video", e);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", initPlayer);
+    </script>
+
+</body>
+</html>
