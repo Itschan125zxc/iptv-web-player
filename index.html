@@ -4,52 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IPTV Web Player</title>
-    
-    <!-- Shaka Player from CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/shaka-player.ui.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/controls.min.css">
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.compiled.min.js"></script>
     <style>
-        body { text-align: center; background-color: #000; color: #fff; font-family: Arial, sans-serif; }
-        #video-container { width: 80%; max-width: 900px; margin: auto; position: relative; }
-        video { width: 100%; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #121212;
+            color: white;
+        }
+        video {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            display: block;
+        }
+        select, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
+    <h1>IPTV Web Player</h1>
 
-    <h1>IPTV Streaming with Shaka Player UI</h1>
-    <div id="video-container" class="shaka-video-container">
-        <video id="video" class="shaka-video" autoplay controls></video>
-        <div id="controls" class="shaka-controls-container"></div>
-    </div>
+    <select id="channelSelect">
+        <option value="https://ni.bobay.workers.dev/1216/manifest.mpd" data-key='{"keys":{"31363735313439343038343136333130:386c6b6a64704d4d3039354d4e6a6933":"base64-key-1"}}'>ANC</option>
+        <option value="https://ni.bobay.workers.dev/1335/manifest.mpd" data-key='{"keys":{"31363735313439343038343136333130:386c6b6a64704d4d3039354d4e6a6933":"base64-key-2"}}'>Channel 2</option>
+    </select>
+    
+    <button onclick="loadChannel()">Play</button>
+    <video id="video" controls autoplay></video>
 
     <script>
         async function initPlayer() {
-            const manifestUri = "https://raw.githubusercontent.com/Itschan125zxc/Burnek/refs/heads/main/Chano-UnliCable%20(2).m3u8"; // Replace with your IPTV stream URL (.mpd or .m3u8)
+            if (!shaka.Player.isBrowserSupported()) {
+                alert("Error: Browser not supported!");
+                return;
+            }
+            window.player = new shaka.Player(document.getElementById("video"));
+            window.player.addEventListener("error", onErrorEvent);
+        }
 
-            const video = document.getElementById("video");
-            const uiContainer = document.getElementById("video-container");
-            const controls = document.getElementById("controls");
+        function onErrorEvent(event) {
+            console.error("Error:", event.detail);
+        }
 
-            // Initialize Shaka Player with UI controls
-            const ui = new shaka.ui.Overlay(new shaka.Player(video), uiContainer, video);
-            const controlsInstance = ui.getControls();
-            const player = controlsInstance.getPlayer();
-
-            player.addEventListener("error", (event) => {
-                console.error("Error code", event.detail.code, "object", event.detail);
-            });
+        async function loadChannel() {
+            const select = document.getElementById("channelSelect");
+            const url = select.value;
+            const key = JSON.parse(select.options[select.selectedIndex].getAttribute("data-key"));
 
             try {
-                await player.load(manifestUri);
-                console.log("The video has been loaded successfully with UI!");
-            } catch (e) {
-                console.error("Error loading the video", e);
+                await window.player.load(url);
+                window.player.configure({
+                    drm: { clearKeys: key }
+                });
+                console.log("Stream loaded successfully");
+            } catch (error) {
+                console.error("Error loading stream", error);
             }
         }
 
         document.addEventListener("DOMContentLoaded", initPlayer);
     </script>
-
 </body>
 </html>
