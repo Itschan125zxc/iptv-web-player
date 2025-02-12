@@ -3,69 +3,56 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entropy TV</title>
+    <title>TEST IPTV WEB</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/shaka-player.compiled.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <h1><i>TEST IPTV WEB</i></h1>
 
-    <!-- Page Title -->
-    <h1><i>ENTROPY TV</i></h1>
-
-    <!-- Video Player -->
-    <div id="video-container" data-shaka-player-container="" shaka-controls="true">
-        <video id="video-player" autoplay class="shaka-video"></video>
+    <!-- Video Container -->
+    <div id="video-container">
+        <video id="video-player" autoplay class="shaka-video" controls></video>
     </div>
 
     <!-- Channel Selector -->
     <div id="channel-selector">
         <div class="tile" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
-            <img src="channel-image.jpg" alt="Channel 1">
-            <span>Channel 1</span>
+            <img src="https://i.imgur.com/lyjZUke.png" alt="TV 5 HD">
+            <span>TV 5 HD</span>
         </div>
         <div class="tile" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
-            <img src="channel-image-2.jpg" alt="Channel 2">
-            <span>Channel 2</span>
+            <img src="https://i.imgur.com/LvswLsB.png" alt="ONE SPORTS">
+            <span>ONE SPORTS</span>
         </div>
     </div>
 
-    <!-- Shaka Player Script -->
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/shaka-player.compiled.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/shaka-player.ui.js"></script>
-
     <script>
-      document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function() {
+            const tiles = document.querySelectorAll('.tile'); // Get all tiles
 
-        const tiles = document.querySelectorAll('.tile'); // Get all the tiles
-
-        tiles.forEach(function(tile) {
-          tile.addEventListener('click', function() {
-            const videoSource = tile.getAttribute('data-source');
-            const dataKey = tile.getAttribute('data-key');
-
-            console.log('Playing stream with key:', dataKey);
-
-            loadVideo(videoSource); // Load the video source
-          });
-        });
-
-        function loadVideo(sourceUrl) {
-          const videoElement = document.getElementById('video-player'); // The video element
-
-          if (shaka.Player.isBrowserSupported()) {
-            const player = new shaka.Player(videoElement);
-            const ui = new shaka.ui.Player(videoElement, player);
-
-            // Load the video source (MPD or M3U8)
-            player.load(sourceUrl).then(function() {
-              console.log('The video has been loaded successfully!');
-            }).catch(function(error) {
-              console.error('Error loading the video: ', error);
+            tiles.forEach(function(tile) {
+                tile.addEventListener('click', function() {
+                    const videoSource = tile.getAttribute('data-source');
+                    loadVideo(videoSource); // Load the video source
+                });
             });
-          } else {
-            console.error('Shaka Player is not supported on this browser.');
-          }
-        }
-      });
+
+            function loadVideo(sourceUrl) {
+                const videoElement = document.getElementById('video-player');
+                const player = new shaka.Player(videoElement);
+
+                if (shaka.Player.isBrowserSupported()) {
+                    player.load(sourceUrl).then(function() {
+                        console.log('The video has been loaded successfully!');
+                    }).catch(function(error) {
+                        console.error('Error loading the video: ', error);
+                    });
+                } else {
+                    console.error('Shaka Player is not supported on this browser.');
+                }
+            }
+        });
     </script>
 </body>
 </html>
