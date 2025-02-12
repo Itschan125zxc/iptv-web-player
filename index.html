@@ -1,72 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV Web Player</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.compiled.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #121212;
-            color: white;
-        }
-        video {
-            width: 80%;
-            max-width: 800px;
-            margin: 20px auto;
-            display: block;
-        }
-        select, button {
-            padding: 10px;
-            margin: 10px;
-            font-size: 16px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPTV Player</title>
+  <style>
+    /* Basic styling */
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      margin: 0;
+      background-color: #222;
+      color: white;
+    }
+
+    .container {
+      width: 80%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Channel list */
+    #channel-list {
+      width: 100%;
+      max-width: 300px;
+      margin: 20px 0;
+      background-color: #333;
+      border-radius: 8px;
+      padding: 10px;
+      list-style: none;
+    }
+
+    #channel-list li {
+      padding: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    #channel-list li:hover {
+      background-color: #555;
+    }
+
+    /* Video player */
+    #video-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: black;
+      position: relative;
+    }
+
+    video {
+      width: 100%;
+      height: auto;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      background-color: rgba(0, 0, 0, 0.5);
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+    }
+
+    .progress-bar {
+      flex: 1;
+      margin: 0 10px;
+      cursor: pointer;
+    }
+
+    .control-btn {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .channel-info {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
-    <h1>IPTV Web Player</h1>
 
-    <select id="channelSelect">
-        <option value="https://ni.bobay.workers.dev/1216/manifest.mpd" data-key='{"31363234353837393638333931313738":"35a493259306157495a557356494b44"}'>Channel 1</option>
-        <option value="https://ni.bobay.workers.dev/1335/manifest.mpd" data-key='{"31363735313439343038343136333130":"386c6b6a64704d4d3039354d4e6a6933"}'>Channel 2</option>
-    </select>
-    
-    <button onclick="loadChannel()">Play</button>
-    <video id="video" controls autoplay></video>
+  <div class="container">
+    <!-- Channel List -->
+    <ul id="channel-list">
+      <li data-source="http://fl2.moveonjoy.com/ACC_NETWORK/index.m3u8" data-key="" data-type="m3u8">ACC</li>
+      <li data-source="https://ni.bobay.workers.dev/1216/manifest.mpd" data-key="31363234353837393638333931313738:335a493259306157495a557356494b44" data-type="mpd">ANC</li>
+      <li data-source="https://ni.bobay.workers.dev/1335/manifest.mpd" data-key="31363735313439343038343136333130:386c6b6a64704d4d3039354d4e6a6933" data-type="mpd">ANIMAL PLANET</li>  
+      <!-- Add more channels here -->
+    </ul>
 
-    <script>
-        async function initPlayer() {
-            if (!shaka.Player.isBrowserSupported()) {
-                alert("Error: Browser not supported!");
-                return;
+    <!-- Video Player -->
+    <div id="video-container">
+      <video id="video" controls></video>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="control-btn" id="playPauseBtn">Play</button>
+        <input class="progress-bar" type="range" id="progressBar" value="0" step="1" min="0">
+        <button class="control-btn" id="muteBtn">Mute</button>
+      </div>
+    </div>
+
+    <!-- Channel Info -->
+    <div id="channel-info" class="channel-info">Select a channel to start watching</div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/shaka-player.compiled.min.js"></script>
+  <script>
+    // Initialize Shaka Player
+    const videoElement = document.getElementById('video');
+    const player = new shaka.Player(videoElement);
+    const progressBar = document.getElementById('progressBar');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const muteBtn = document.getElementById('muteBtn');
+    const channelInfo = document.getElementById('channel-info');
+
+    // Play/Pause button
+    playPauseBtn.addEventListener('click', () => {
+      if (videoElement.paused) {
+        videoElement.play();
+        playPauseBtn.textContent = 'Pause';
+      } else {
+        videoElement.pause();
+        playPauseBtn.textContent = 'Play';
+      }
+    });
+
+    // Mute button
+    muteBtn.addEventListener('click', () => {
+      videoElement.muted = !videoElement.muted;
+      muteBtn.textContent = videoElement.muted ? 'Unmute' : 'Mute';
+    });
+
+    // Update progress bar
+    videoElement.addEventListener('timeupdate', () => {
+      const progress = (videoElement.currentTime / videoElement.duration) * 100;
+      progressBar.value = progress;
+    });
+
+    // Seek on progress bar click
+    progressBar.addEventListener('input', () => {
+      const seekTime = (progressBar.value / 100) * videoElement.duration;
+      videoElement.currentTime = seekTime;
+    });
+
+    // Channel list click
+    const channelList = document.getElementById('channel-list');
+    channelList.addEventListener('click', (e) => {
+      if (e.target && e.target.nodeName === 'LI') {
+        const streamUrl = e.target.getAttribute('data-source');
+        const streamType = e.target.getAttribute('data-type');
+        const key = e.target.getAttribute('data-key');
+        const channelName = e.target.textContent;
+
+        // DRM Configuration
+        if (key) {
+          const drmConfig = {
+            widevine: {
+              url: 'your-widevine-license-server-url',
+              headers: { 'Authorization': `Bearer ${key}` }
             }
-            window.player = new shaka.Player(document.getElementById("video"));
-            window.player.addEventListener("error", onErrorEvent);
+          };
+          player.configure({ drm: drmConfig });
         }
 
-        function onErrorEvent(event) {
-            console.error("Error:", event.detail);
+        // Load stream based on type
+        if (streamType === 'm3u8') {
+          player.load(streamUrl).then(() => {
+            console.log('The video has been loaded successfully');
+            channelInfo.textContent = `Now playing: ${channelName}`;
+          }).catch(error => {
+            console.error('Error loading the stream:', error);
+            channelInfo.textContent = 'Error loading stream';
+          });
+        } else if (streamType === 'mpd') {
+          player.load(streamUrl).then(() => {
+            console.log('The video has been loaded successfully');
+            channelInfo.textContent = `Now playing: ${channelName}`;
+          }).catch(error => {
+            console.error('Error loading the stream:', error);
+            channelInfo.textContent = 'Error loading stream';
+          });
         }
 
-        async function loadChannel() {
-            const select = document.getElementById("channelSelect");
-            const url = select.value;
-            const key = JSON.parse(select.options[select.selectedIndex].getAttribute("data-key"));
+        playPauseBtn.textContent = 'Pause';  // Start playing when new channel is loaded
+      }
+    });
 
-            try {
-                await window.player.load(url);
-                window.player.configure({
-                    drm: { clearKeys: key }
-                });
-                console.log("Stream loaded successfully");
-            } catch (error) {
-                console.error("Error loading stream", error);
-            }
-        }
+    // Initialize default channel
+    const defaultStreamUrl = 'https://path_to_default_channel.m3u8';
+    const defaultStreamType = 'm3u8';
+    const defaultChannelName = 'Default Channel';
+    const defaultKey = ''; // Optional DRM key
+    const defaultDrmConfig = defaultKey ? {
+      widevine: {
+        url: 'your-widevine-license-server-url',
+        headers: { 'Authorization': `Bearer ${defaultKey}` }
+      }
+    } : null;
 
-        document.addEventListener("DOMContentLoaded", initPlayer);
-    </script>
+    if (defaultDrmConfig) {
+      player.configure({ drm: defaultDrmConfig });
+    }
+
+    // Load default stream
+    if (defaultStreamType === 'm3u8') {
+      player.load(defaultStreamUrl).then(() => {
+        console.log('The video has been loaded successfully');
+        channelInfo.textContent = `Now playing: ${defaultChannelName}`;
+      }).catch(error => {
+        console.error('Error loading the stream:', error);
+        channelInfo.textContent = 'Error loading stream';
+      });
+    } else if (defaultStreamType === 'mpd') {
+      player.load(defaultStreamUrl).then(() => {
+        console.log('The video has been loaded successfully');
+        channelInfo.textContent = `Now playing: ${defaultChannelName}`;
+      }).catch(error => {
+        console.error('Error loading the stream:', error);
+        channelInfo.textContent = 'Error loading stream';
+      });
+    }
+
+  </script>
+
 </body>
 </html>
