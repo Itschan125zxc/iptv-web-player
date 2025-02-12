@@ -49,10 +49,6 @@
         function loadVideo(sourceUrl, key) {
             const videoElement = document.getElementById('video-player');
 
-            if (player) {
-                player.destroy();
-            }
-
             player = new shaka.Player(videoElement);
 
             player.configure({
