@@ -1,0 +1,54 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    color: #fff;
+}
+
+#video-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: black;
+}
+
+.shaka-video {
+    width: 100%;
+    height: 100%;
+}
+
+.menu-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+.menu-box {
+    position: absolute;
+    top: 50px;
+    left: 10px;
+    display: none;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+}
+
+.menu-box a {
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.tile {
+    cursor: pointer;
+    display: inline-block;
+    margin: 10px;
+}
+
+.tile img {
+    width: 150px;
+    height: 100px;
+}
