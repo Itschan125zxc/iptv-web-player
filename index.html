@@ -28,49 +28,55 @@
     </div>
 
     <script>
-        let player;
+        let isLoading = false;
+        let player = null; // Player variable
 
         document.addEventListener("DOMContentLoaded", function() {
-            const tiles = document.querySelectorAll('.tile'); // Get all tiles
+            const tiles = document.querySelectorAll('.tile');
 
             tiles.forEach(function(tile) {
                 tile.addEventListener('click', function() {
-                    const videoSource = tile.getAttribute('data-source');
-                    const key = tile.getAttribute('data-key');
-                    loadVideo(videoSource, key); // Load the video source with the key
-                });
-            });
-
-            function loadVideo(sourceUrl, key) {
-                const videoElement = document.getElementById('video-player');
-
-                // Clear existing player if any
-                if (player) {
-                    player.destroy();
-                }
-
-                player = new shaka.Player(videoElement);
-
-                // Apply DRM configuration
-                player.configure({
-                    drm: {
-                        clearKeys: {
-                            [key.split(":")[0]]: key.split(":")[1] // Extract the key id and license key
-                        }
+                    if (!isLoading) {
+                        isLoading = true;
+                        const videoSource = tile.getAttribute('data-source');
+                        const key = tile.getAttribute('data-key');
+                        loadVideo(videoSource, key);
                     }
                 });
-
-                if (shaka.Player.isBrowserSupported()) {
-                    player.load(sourceUrl).then(function() {
-                        console.log('The video has been loaded successfully!');
-                    }).catch(function(error) {
-                        console.error('Error loading the video: ', error);
-                    });
-                } else {
-                    console.error('Shaka Player is not supported on this browser.');
-                }
-            }
+            });
         });
+
+        function loadVideo(sourceUrl, key) {
+            const videoElement = document.getElementById('video-player');
+
+            if (player) {
+                player.destroy();
+            }
+
+            player = new shaka.Player(videoElement);
+
+            player.configure({
+                drm: {
+                    clearKeys: {
+                        [key.split(":")[0]]: key.split(":")[1]
+                    }
+                }
+            });
+
+            if (shaka.Player.isBrowserSupported()) {
+                player.load(sourceUrl).then(function() {
+                    console.log('The video has been loaded successfully!');
+                    isLoading = false;
+                }).catch(function(error) {
+                    console.error('Error loading the video: ', error);
+                    isLoading = false;
+                });
+            } else {
+                console.error('Shaka Player is not supported on this browser.');
+                isLoading = false;
+            }
+        }
     </script>
+
 </body>
 </html>
