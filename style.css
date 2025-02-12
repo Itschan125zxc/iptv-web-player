@@ -52,3 +52,10 @@ body {
     width: 150px;
     height: 100px;
 }
+
+.tile span {
+    font-size: 16px;  /* Adjust font size */
+    color: #fff;  /* White text color */
+    text-align: center;  /* Center the text */
+    display: block;  /* Make span a block element to allow alignment */
+}
