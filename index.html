@@ -22,7 +22,6 @@
             <img src="channel-image.jpg" alt="Channel 1">
             <span>Channel 1</span>
         </div>
-
         <div class="tile" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
             <img src="channel-image-2.jpg" alt="Channel 2">
             <span>Channel 2</span>
@@ -35,8 +34,6 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", function() {
-        // Disable debug logging if not needed
-        shaka.log.setLevel(shaka.log.Level.NONE);
 
         const tiles = document.querySelectorAll('.tile'); // Get all the tiles
 
