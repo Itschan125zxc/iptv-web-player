@@ -8,16 +8,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/shaka-player.compiled.js"></script>
 </head>
 <body>
-
-    <!-- Page Title -->
-    <h1><i>ENTROPY TV</i></h1>
-
-    <!-- Video Player -->
+    <h1><i>TEST IPTV WEB</i></h1>
     <div id="video-container">
         <video id="video-player" autoplay class="shaka-video" controls></video>
     </div>
-
-    <!-- Channel Selector -->
     <div id="channel-selector">
         <div id="channel-selector">
     <div class="tile" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
@@ -32,33 +26,33 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const tiles = document.querySelectorAll('.tile'); // Get all the tiles
+            const tiles = document.querySelectorAll('.tile');
 
             tiles.forEach(function(tile) {
                 tile.addEventListener('click', function() {
-                    const videoSource = tile.getAttribute('data-source'); // Get video source URL
-                    const dataKey = tile.getAttribute('data-key'); // Get data key (optional)
+                    const videoSource = tile.getAttribute('data-source');
+                    const dataKey = tile.getAttribute('data-key');
 
                     console.log('Playing stream with key:', dataKey);
 
-                    loadVideo(videoSource); // Load the video source
+                    loadVideo(videoSource);
                 });
             });
 
             function loadVideo(sourceUrl) {
-                const videoElement = document.getElementById('video-player'); // The video element
+                const videoElement = document.getElementById('video-player');
 
                 if (shaka.Player.isBrowserSupported()) {
                     const player = new shaka.Player(videoElement);
 
-                    // Set robustness level (e.g., "max", "std", or "low")
+
                     player.configure({
                         streaming: {
-                            robustnessLevel: 'std' // or 'max' or 'low'
+                            robustnessLevel: 'std'
                         }
                     });
 
-                    // Load the video source (MPD or M3U8)
+              
                     player.load(sourceUrl).then(function() {
                         console.log('The video has been loaded successfully!');
                     }).catch(function(error) {
