@@ -50,6 +50,13 @@
                 if (shaka.Player.isBrowserSupported()) {
                     const player = new shaka.Player(videoElement);
 
+                    // Set robustness level (e.g., "max", "std", or "low")
+                    player.configure({
+                        streaming: {
+                            robustnessLevel: 'std' // or 'max' or 'low'
+                        }
+                    });
+
                     // Load the video source (MPD or M3U8)
                     player.load(sourceUrl).then(function() {
                         console.log('The video has been loaded successfully!');
