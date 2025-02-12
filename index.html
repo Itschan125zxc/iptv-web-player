@@ -17,43 +17,48 @@
 
     <!-- Channel Selector -->
     <div id="channel-selector">
-        <div class="tile" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" data-key-id="2615129ef2c846a9bbd43a641c7303ef" data-license-key="07c7f996b1734ea288641a68e1cfdc4d">
+        <div class="tile" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
             <img src="https://i.imgur.com/lyjZUke.png" alt="TV 5 HD">
             <span>TV 5 HD</span>
         </div>
-        <div class="tile" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" data-key-id="53c3bf2eba574f639aa21f2d4409ff11" data-license-key="3de28411cf08a64ea935b9578f6d0edd">
+        <div class="tile" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
             <img src="https://i.imgur.com/LvswLsB.png" alt="ONE SPORTS">
             <span>ONE SPORTS</span>
         </div>
     </div>
 
     <script>
+        let player;
+
         document.addEventListener("DOMContentLoaded", function() {
             const tiles = document.querySelectorAll('.tile'); // Get all tiles
 
             tiles.forEach(function(tile) {
                 tile.addEventListener('click', function() {
                     const videoSource = tile.getAttribute('data-source');
-                    const keyId = tile.getAttribute('data-key-id');
-                    const licenseKey = tile.getAttribute('data-license-key');
-                    loadVideo(videoSource, keyId, licenseKey); // Load the video source and corresponding DRM keys
+                    const key = tile.getAttribute('data-key');
+                    loadVideo(videoSource, key); // Load the video source with the key
                 });
             });
 
-            function loadVideo(sourceUrl, keyId, licenseKey) {
+            function loadVideo(sourceUrl, key) {
                 const videoElement = document.getElementById('video-player');
-                const player = new shaka.Player(videoElement);
 
-                // Configure DRM with the dynamic key and license
-                const drmConfig = {
+                // Clear existing player if any
+                if (player) {
+                    player.destroy();
+                }
+
+                player = new shaka.Player(videoElement);
+
+                // Apply DRM configuration
+                player.configure({
                     drm: {
                         clearKeys: {
-                            [keyId]: licenseKey
+                            [key.split(":")[0]]: key.split(":")[1] // Extract the key id and license key
                         }
                     }
-                };
-
-                player.configure(drmConfig);
+                });
 
                 if (shaka.Player.isBrowserSupported()) {
                     player.load(sourceUrl).then(function() {
