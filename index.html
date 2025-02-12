@@ -38,15 +38,26 @@
 
                     console.log('Playing stream with key:', dataKey);
 
-                    loadVideo(videoSource); // Load the video source
+                    loadVideo(videoSource, dataKey); // Load the video source with DRM key
                 });
             });
 
-            function loadVideo(sourceUrl) {
+            function loadVideo(sourceUrl, key) {
                 const videoElement = document.getElementById('video-player');
 
                 if (shaka.Player.isBrowserSupported()) {
                     const player = new shaka.Player(videoElement);
+
+                    // DRM configuration with ClearKey
+                    const drmConfig = {
+                        drm: {
+                            clearKeys: {
+                                'org.w3.clearkey': key // Set the ClearKey from the data-key attribute
+                            }
+                        }
+                    };
+
+                    player.configure(drmConfig); // Apply the ClearKey DRM configuration
 
                     player.load(sourceUrl).then(function() {
                         console.log('The video has been loaded successfully!');
