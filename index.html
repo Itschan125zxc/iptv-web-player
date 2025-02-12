@@ -1,238 +1,201 @@
-<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPTV Player</title>
-  <style>
-    /* Basic styling */
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      margin: 0;
-      background-color: #222;
-      color: white;
-    }
-
-    .container {
-      width: 80%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* Channel list */
-    #channel-list {
-      width: 100%;
-      max-width: 300px;
-      margin: 20px 0;
-      background-color: #333;
-      border-radius: 8px;
-      padding: 10px;
-      list-style: none;
-    }
-
-    #channel-list li {
-      padding: 10px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    #channel-list li:hover {
-      background-color: #555;
-    }
-
-    /* Video player */
-    #video-container {
-      max-width: 800px;
-      margin: 0 auto;
-      background-color: black;
-      position: relative;
-    }
-
-    video {
-      width: 100%;
-      height: auto;
-    }
-
-    /* Controls */
-    .controls {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px;
-      background-color: rgba(0, 0, 0, 0.5);
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-    }
-
-    .progress-bar {
-      flex: 1;
-      margin: 0 10px;
-      cursor: pointer;
-    }
-
-    .control-btn {
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    .channel-info {
-      margin-top: 10px;
-      text-align: center;
-      font-size: 18px;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    <!-- Channel List -->
-    <ul id="channel-list">
-      <li data-source="http://fl2.moveonjoy.com/ACC_NETWORK/index.m3u8" data-key="" data-type="m3u8">ACC</li>
-      <li data-source="https://ni.bobay.workers.dev/1216/manifest.mpd" data-key="31363234353837393638333931313738:335a493259306157495a557356494b44" data-type="mpd">ANC</li>
-      <li data-source="https://ni.bobay.workers.dev/1335/manifest.mpd" data-key="31363735313439343038343136333130:386c6b6a64704d4d3039354d4e6a6933" data-type="mpd">ANIMAL PLANET</li>  
-      <!-- Add more channels here -->
-    </ul>
-
-    <!-- Video Player -->
-    <div id="video-container">
-      <video id="video" controls></video>
-
-      <!-- Controls -->
-      <div class="controls">
-        <button class="control-btn" id="playPauseBtn">Play</button>
-        <input class="progress-bar" type="range" id="progressBar" value="0" step="1" min="0">
-        <button class="control-btn" id="muteBtn">Mute</button>
-      </div>
-    </div>
-
-    <!-- Channel Info -->
-    <div id="channel-info" class="channel-info">Select a channel to start watching</div>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/shaka-player.compiled.min.js"></script>
-  <script>
-    // Initialize Shaka Player
-    const videoElement = document.getElementById('video');
-    const player = new shaka.Player(videoElement);
-    const progressBar = document.getElementById('progressBar');
-    const playPauseBtn = document.getElementById('playPauseBtn');
-    const muteBtn = document.getElementById('muteBtn');
-    const channelInfo = document.getElementById('channel-info');
-
-    // Play/Pause button
-    playPauseBtn.addEventListener('click', () => {
-      if (videoElement.paused) {
-        videoElement.play();
-        playPauseBtn.textContent = 'Pause';
-      } else {
-        videoElement.pause();
-        playPauseBtn.textContent = 'Play';
-      }
-    });
-
-    // Mute button
-    muteBtn.addEventListener('click', () => {
-      videoElement.muted = !videoElement.muted;
-      muteBtn.textContent = videoElement.muted ? 'Unmute' : 'Mute';
-    });
-
-    // Update progress bar
-    videoElement.addEventListener('timeupdate', () => {
-      const progress = (videoElement.currentTime / videoElement.duration) * 100;
-      progressBar.value = progress;
-    });
-
-    // Seek on progress bar click
-    progressBar.addEventListener('input', () => {
-      const seekTime = (progressBar.value / 100) * videoElement.duration;
-      videoElement.currentTime = seekTime;
-    });
-
-    // Channel list click
-    const channelList = document.getElementById('channel-list');
-    channelList.addEventListener('click', (e) => {
-      if (e.target && e.target.nodeName === 'LI') {
-        const streamUrl = e.target.getAttribute('data-source');
-        const streamType = e.target.getAttribute('data-type');
-        const key = e.target.getAttribute('data-key');
-        const channelName = e.target.textContent;
-
-        // DRM Configuration
-        if (key) {
-          const drmConfig = {
-            widevine: {
-              url: 'your-widevine-license-server-url',
-              headers: { 'Authorization': `Bearer ${key}` }
-            }
-          };
-          player.configure({ drm: drmConfig });
-        }
-
-        // Load stream based on type
-        if (streamType === 'm3u8') {
-          player.load(streamUrl).then(() => {
-            console.log('The video has been loaded successfully');
-            channelInfo.textContent = `Now playing: ${channelName}`;
-          }).catch(error => {
-            console.error('Error loading the stream:', error);
-            channelInfo.textContent = 'Error loading stream';
-          });
-        } else if (streamType === 'mpd') {
-          player.load(streamUrl).then(() => {
-            console.log('The video has been loaded successfully');
-            channelInfo.textContent = `Now playing: ${channelName}`;
-          }).catch(error => {
-            console.error('Error loading the stream:', error);
-            channelInfo.textContent = 'Error loading stream';
-          });
-        }
-
-        playPauseBtn.textContent = 'Pause';  // Start playing when new channel is loaded
-      }
-    });
-
-    // Initialize default channel
-    const defaultStreamUrl = 'https://path_to_default_channel.m3u8';
-    const defaultStreamType = 'm3u8';
-    const defaultChannelName = 'Default Channel';
-    const defaultKey = ''; // Optional DRM key
-    const defaultDrmConfig = defaultKey ? {
-      widevine: {
-        url: 'your-widevine-license-server-url',
-        headers: { 'Authorization': `Bearer ${defaultKey}` }
-      }
-    } : null;
-
-    if (defaultDrmConfig) {
-      player.configure({ drm: defaultDrmConfig });
-    }
-
-    // Load default stream
-    if (defaultStreamType === 'm3u8') {
-      player.load(defaultStreamUrl).then(() => {
-        console.log('The video has been loaded successfully');
-        channelInfo.textContent = `Now playing: ${defaultChannelName}`;
-      }).catch(error => {
-        console.error('Error loading the stream:', error);
-        channelInfo.textContent = 'Error loading stream';
-      });
-    } else if (defaultStreamType === 'mpd') {
-      player.load(defaultStreamUrl).then(() => {
-        console.log('The video has been loaded successfully');
-        channelInfo.textContent = `Now playing: ${defaultChannelName}`;
-      }).catch(error => {
-        console.error('Error loading the stream:', error);
-        channelInfo.textContent = 'Error loading stream';
-      });
-    }
-
-  </script>
-
-</body>
-</html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>BURNEK UNLI CABLE</title>
+        <link rel="stylesheet" href="controls.css">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <h1>
+            <i>BURNEK UNLI CABLE</i>
+        </h1>
+        <div id="video-container" data-shaka-player-container="" shaka-controls="true" class="shaka-video-container" style="cursor: none;">
+            <video id="video-player" autoplay="" class="shaka-video" src="blob:https://entropy-tv.pages.dev/92c0892f-fafd-4788-837d-c944cc7d389f"></video>
+            <div class="shaka-controls-container" shown="true">
+                <div class="shaka-scrim-container"></div>
+                <div class="shaka-server-side-ad-container"></div>
+                <div class="shaka-bottom-controls shaka-no-propagation">
+                    <div class="shaka-ad-controls shaka-hidden">
+                        <div class="shaka-ad-position shaka-hidden">
+                            <span class="shaka-ad-position-span"></span>
+                        </div>
+                        <div class="shaka-ad-counter">
+                            <span class="shaka-ad-counter-span"></span>
+                        </div>
+                    </div>
+                    <div class="shaka-controls-button-panel shaka-show-controls-on-mouse-over">
+                        <button type="button" class="shaka-small-play-button material-icons-round shaka-tooltip" aria-label="Play">play_arrow</button>
+                        <button type="button" class="shaka-current-time" disabled="">0:00</button>
+                        <div class="shaka-spacer" aria-hidden="true"></div>
+                        <button type="button" class="shaka-mute-button material-icons-round shaka-tooltip" aria-label="Mute">volume_up</button>
+                        <div class="shaka-range-container shaka-volume-bar-container" style="background: linear-gradient(to right, rgb(255, 255, 255) 100%, rgba(255, 255, 255, 0.54) 100%, rgba(255, 255, 255, 0.54) 100%);">
+                            <input class="shaka-range-element shaka-volume-bar" type="range" step="any" min="0" max="1" aria-label="Volume">
+                        </div>
+                        <button type="button" class="shaka-fullscreen-button material-icons-round shaka-tooltip" aria-label="Full screen">fullscreen</button>
+                        <button type="button" class="shaka-overflow-menu-button shaka-no-propagation material-icons-round shaka-tooltip" aria-label="More settings">more_vert</button>
+                    </div>
+                    <div class="shaka-range-container shaka-seek-bar-container" style="background: rgba(255, 255, 255, 0.3);">
+                        <div class="shaka-ad-markers"></div>
+                        <input class="shaka-range-element shaka-seek-bar shaka-no-propagation shaka-show-controls-on-mouse-over" type="range" step="any" min="0" max="0" aria-label="Seek">
+                        <div id="shaka-player-ui-thumbnail-container" style="visibility: hidden;">
+                            <img id="shaka-player-ui-thumbnail-image" draggable="false">
+                            <div id="shaka-player-ui-thumbnail-time"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="shaka-overflow-menu shaka-no-propagation shaka-show-controls-on-mouse-over shaka-hidden">
+                    <button type="button" class="shaka-overflow-button shaka-resolution-button shaka-tooltip-status" shaka-status="Auto" aria-label="Resolution">
+                        <i class="material-icons-round">settings</i>
+                        <label class="shaka-overflow-button-label shaka-overflow-menu-only">
+                            <span>Resolution</span>
+                            <span class="shaka-current-selection-span">Auto</span>
+                        </label>
+                    </button>
+                    <button type="button" class="shaka-overflow-button shaka-language-button shaka-tooltip-status" aria-label="Language" shaka-status="">
+                        <i class="material-icons-round">language</i>
+                        <label class="shaka-overflow-button-label shaka-overflow-menu-only">
+                            <span>Language</span>
+                            <span class="shaka-current-selection-span"></span>
+                        </label>
+                    </button>
+                    <button type="button" class="shaka-overflow-button shaka-caption-button shaka-tooltip-status shaka-hidden" aria-pressed="false" aria-label="Captions" shaka-status="Off">
+                        <i class="material-icons-round">closed_caption_disabled</i>
+                        <label class="shaka-overflow-button-label shaka-overflow-menu-only">
+                            <span>Captions</span>
+                            <span class="shaka-current-selection-span">Off</span>
+                        </label>
+                    </button>
+                    <button type="button" class="shaka-overflow-button shaka-playbackrate-button shaka-tooltip-status" aria-label="Playback speed" shaka-status="0x">
+                        <i class="material-icons-round">slow_motion_video</i>
+                        <label class="shaka-overflow-button-label shaka-overflow-menu-only">
+                            <span>Playback speed</span>
+                            <span class="shaka-current-selection-span">0x</span>
+                        </label>
+                    </button>
+                    <button type="button" class="shaka-cast-button shaka-tooltip shaka-hidden" aria-pressed="false" aria-label="Cast...">
+                        <i class="material-icons-round">cast</i>
+                        <label class="shaka-overflow-button-label shaka-overflow-menu-only">
+                            <span>Cast...</span>
+                            <span class="shaka-current-selection-span">Off</span>
+                        </label>
+                    </button>
+                </div>
+                <div class="shaka-no-propagation shaka-show-controls-on-mouse-over shaka-settings-menu shaka-hidden shaka-resolutions">
+                    <button type="button" class="shaka-back-to-overflow-button" aria-label="Resolution">
+                        <i class="material-icons-round">arrow_back</i>
+                        <span>Resolution</span>
+                    </button>
+                    <button type="button" class="shaka-enable-abr-button" aria-selected="true">
+                        <span class="shaka-auto-span shaka-chosen-item">Auto</span>
+                        <i class="material-icons-round shaka-chosen-item" aria-hidden="true">done</i>
+                    </button>
+                </div>
+                <div class="shaka-no-propagation shaka-show-controls-on-mouse-over shaka-settings-menu shaka-hidden shaka-audio-languages">
+                    <button type="button" class="shaka-back-to-overflow-button" aria-label="Back">
+                        <i class="material-icons-round">arrow_back</i>
+                        <span>Language</span>
+                    </button>
+                </div>
+                <div class="shaka-no-propagation shaka-show-controls-on-mouse-over shaka-settings-menu shaka-hidden shaka-text-languages">
+                    <button type="button" class="shaka-back-to-overflow-button" aria-label="Back">
+                        <i class="material-icons-round">arrow_back</i>
+                        <span>Captions</span>
+                    </button>
+                    <button type="button" class="shaka-turn-captions-off-button" aria-selected="true">
+                        <span class="shaka-auto-span shaka-chosen-item">Off</span>
+                        <i class="material-icons-round shaka-chosen-item" aria-hidden="true">done</i>
+                    </button>
+                </div>
+                <div class="shaka-no-propagation shaka-show-controls-on-mouse-over shaka-settings-menu shaka-hidden shaka-playback-rates">
+                    <button type="button" class="shaka-back-to-overflow-button" aria-label="Back">
+                        <i class="material-icons-round">arrow_back</i>
+                        <span>Playback speed</span>
+                    </button>
+                    <button type="button">
+                        <span>0.5x</span>
+                    </button>
+                    <button type="button">
+                        <span>0.75x</span>
+                    </button>
+                    <button type="button">
+                        <span>1x</span>
+                    </button>
+                    <button type="button">
+                        <span>1.25x</span>
+                    </button>
+                    <button type="button">
+                        <span>1.5x</span>
+                    </button>
+                    <button type="button">
+                        <span>1.75x</span>
+                    </button>
+                    <button type="button">
+                        <span>2x</span>
+                    </button>
+                </div>
+            </div>
+            <div class="shaka-client-side-ad-container shaka-hidden"></div>
+            <div class="shaka-spinner-container shaka-hidden">
+                <div class="shaka-spinner">
+                    <svg class="shaka-spinner-svg" viewBox="0 0 30 30">
+                        <circle class="shaka-spinner-path" cx="15" cy="15" r="14.5" fill="none" stroke-width="1" stroke-miterlimit="10"></circle>
+                    </svg>
+                </div>
+            </div>
+            <button class="shaka-pip-button" style="position: absolute; top: 10px; right: 10px; padding: 8px 12px; background: rgb(228, 190, 199); color: black; border: none; border-radius: 8px; cursor: pointer; z-index: 1000;">
+                <img src="./EntropyTV._files/sbtYsFs.png">
+            </button>
+            <div class="shaka-text-container" style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;"></div>
+        </div>
+        <div id="channel-selector">
+            <div class="tile" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
+                <img src="./EntropyTV._files/jsCBRq0.png" alt="undefined">
+                <span>undefined</span>
+            </div>
+            <div class="tile" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
+                <img src="./EntropyTV._files/btiNwYt.png" alt="undefined">
+                <span>undefined</span>
+            </div>
+            <div class="tile" data-source="https://qp-pldt-live-grp-03-prod.akamaized.net/out/u/cnn_rptv_prod_hd.mpd" data-key="1917f4caf2364e6d9b1507326a85ead6:a1340a251a5aa63a9b0ea5d9d7f67595">
+                <img src="./EntropyTV._files/IDCHfXm.png" alt="undefined">
+                <span>undefined</span>
+            </div>
+            <div class="tile" data-source="https://qp-pldt-live-grp-06-prod.akamaized.net/out/u/cg_sari_sari_sd.mpd" data-key="0a7ab3612f434335aa6e895016d8cd2d:b21654621230ae21714a5cab52daeb9d">
+                <img src="./EntropyTV._files/kKuO7LD.png" alt="undefined">
+                <span>undefined</span>
+            </div>
+            <div class="tile" data-source="https://qp-pldt-live-grp-06-prod.akamaized.net/out/u/cg_buko_sd.mpd" data-key="d273c085f2ab4a248e7bfc375229007d:7932354c3a84f7fc1b80efa6bcea0615">
+                <img src="./EntropyTV._files/Du6LQCi.png" alt="undefined">
+                <span>undefined</span>
+            </div>
+            <div class="tile" data-source="https://qp-pldt-live-grp-04-prod.akamaized.net/out/u/onenews_hd1.mpd" data-key="d39eb201ae494a0b98583df4d110e8dd:6797066880d344422abd3f5eda41f45f">
+                <img src="./EntropyTV._files/bmP06bk.png" alt="undefined">
+                <span>undefined</span>
+            </div>
+            <div class="tile" data-source="https://qp-pldt-live-grp-04-prod.akamaized.net/out/u/oneph_sd.mpd" data-key="92834ab4a7e1499b90886c5d49220e46:a7108d9a6cfcc1b7939eb111daf09ab3">
+                <img src="./EntropyTV._files/9dMuFE1.png" alt="undefined">
+                <span>undefined</span>
+            </div>
+            <div class="tile" data-source="https://qp-pldt-live-grp-08-prod.akamaized.net/out/u/truefm_tv.mpd" data-key="0559c95496d44fadb94105b9176c3579:40d8bb2a46ffd03540e0c6210ece57ce">
+                <img src="./EntropyTV._files/U8L0Liq.png" alt="undefined">
+                <span>undefined</span>
+            </div>
+            <div class="tile" data-source="https://qp-pldt-live-grp-09-prod.akamaized.net/out/u/cg_mptv.mpd" data-key="6aab8f40536f4ea98e7c97b8f3aa7d4e:139aa5a55ade471faaddacc4f4de8807">
+                <img src="./EntropyTV._files/BMCnoRn.png" alt="undefined">
+                <span>undefined</span>
+            </div>
+            <div class="tile" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/cg_ptv4_sd.mpd" data-key="71a130a851b9484bb47141c8966fb4a3:ad1f003b4f0b31b75ea4593844435600">
+                <img src="./EntropyTV._files/ycPz1Uc.png" alt="undefined">
+                <span>undefined</span>
+            </div>
+            <div class="tile" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/ibc13_sd.mpd" data-key="04e292bc99bd4ccba89e778651914254:ff0a62bdf8920ce453fe680330b563a5">
+                <img src="./EntropyTV._files/PwFOHQb.png" alt="undefined">
+                <span>undefined</span>
+            </div>
+            <div class="tile" data-source="https://wag.ika.lat/1179/manifest.mpd" data-key="31363233323238353336303333363036:367662564c69425947353948374f4553">
+                <img src="./EntropyTV._files/mw3crw9.png" alt="undefined">
+                <span>undefined</span>
+            </div>
+        </div>
+         </body>
+  </html>
