@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Entropy TV</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/shaka-player.compiled.js"></script>
 </head>
 <body>
 
@@ -19,16 +20,14 @@
     <!-- Channel Selector -->
     <div id="channel-selector">
         <div class="tile" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
-                <img src="./EntropyTV._files/jsCBRq0.png" alt="undefined">
-                <span>undefined</span>
-            </div>
-            <div class="tile" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
-                <img src="./EntropyTV._files/btiNwYt.png" alt="undefined">
-                <span>undefined</span>
-            </div>
+            <img src="./EntropyTV._files/jsCBRq0.png" alt="undefined">
+            <span>undefined</span>
+        </div>
+        <div class="tile" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
+            <img src="./EntropyTV._files/btiNwYt.png" alt="undefined">
+            <span>undefined</span>
+        </div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/shaka-player.compiled.js"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -36,8 +35,8 @@
 
             tiles.forEach(function(tile) {
                 tile.addEventListener('click', function() {
-                    const videoSource = tile.getAttribute('data-source');
-                    const dataKey = tile.getAttribute('data-key');
+                    const videoSource = tile.getAttribute('data-source'); // Get video source URL
+                    const dataKey = tile.getAttribute('data-key'); // Get data key (optional)
 
                     console.log('Playing stream with key:', dataKey);
 
@@ -45,35 +44,21 @@
                 });
             });
 
-            let player;  // Declare player globally
-
             function loadVideo(sourceUrl) {
                 const videoElement = document.getElementById('video-player'); // The video element
 
                 if (shaka.Player.isBrowserSupported()) {
-                    // If there's already an instance of the player, destroy it
-                    if (player) {
-                        player.destroy().then(function() {
-                            // Player has been destroyed, now initialize a new one
-                            initializePlayer(videoElement, sourceUrl);
-                        });
-                    } else {
-                        // If player doesn't exist, initialize it right away
-                        initializePlayer(videoElement, sourceUrl);
-                    }
+                    const player = new shaka.Player(videoElement);
+
+                    // Load the video source (MPD or M3U8)
+                    player.load(sourceUrl).then(function() {
+                        console.log('The video has been loaded successfully!');
+                    }).catch(function(error) {
+                        console.error('Error loading the video: ', error);
+                    });
                 } else {
                     console.error('Shaka Player is not supported on this browser.');
                 }
-            }
-
-            function initializePlayer(videoElement, sourceUrl) {
-                player = new shaka.Player(videoElement);
-
-                player.load(sourceUrl).then(function() {
-                    console.log('The video has been loaded successfully!');
-                }).catch(function(error) {
-                    console.error('Error loading the video: ', error);
-                });
             }
         });
     </script>
