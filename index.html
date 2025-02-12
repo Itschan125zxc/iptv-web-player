@@ -56,6 +56,17 @@
                     clearKeys: {
                         [key.split(":")[0]]: key.split(":")[1]
                     }
+                },
+                streaming: {
+                    bufferingGoal: 30,  // Buffer goal in seconds
+                    retryParameters: {
+                        maxAttempts: 5,  // Retry on failure
+                    },
+                },
+                manifest: {
+                    live: {
+                        usePersistentState: true, // Ensure the stream remains live
+                    }
                 }
             });
 
@@ -73,6 +84,5 @@
             }
         }
     </script>
-
 </body>
 </html>
