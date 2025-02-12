@@ -3,78 +3,64 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BURNEK UNLI CABLE</title>
+    <title>Entropy TV</title>
     <link rel="stylesheet" href="controls.css">
     <link rel="stylesheet" href="style.css">
-
-    <!-- Add Shaka Player Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/shaka-player.compiled.js"></script>
 </head>
 <body>
 
-    <h1><i>BURNEK UNLI CABLE</i></h1>
+    <!-- Page Title -->
+    <h1><i>ENTROPY TV</i></h1>
 
-    <div id="video-container" class="shaka-video-container" style="cursor: none;">
+    <!-- Video Player -->
+    <div id="video-container" data-shaka-player-container="" shaka-controls="true">
         <video id="video-player" autoplay class="shaka-video"></video>
-        <div class="shaka-controls-container" shown="true">
-            <div class="shaka-scrim-container"></div>
-            <div class="shaka-bottom-controls">
-                <!-- Controls code (same as original) -->
-                <button type="button" class="shaka-small-play-button">play_arrow</button>
-                <button type="button" class="shaka-current-time" disabled="">0:00</button>
-                <button type="button" class="shaka-mute-button">volume_up</button>
-                <button type="button" class="shaka-fullscreen-button">fullscreen</button>
-            </div>
-            <div class="shaka-range-container shaka-seek-bar-container">
-                <input class="shaka-seek-bar" type="range" step="any" min="0" max="0">
-            </div>
-        </div>
     </div>
 
+    <!-- Channel Selector -->
     <div id="channel-selector">
-            <div class="tile" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
-                <img src="./EntropyTV._files/jsCBRq0.png" alt="undefined">
-                <span>undefined</span>
-            </div>
+    <div class="tile" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
+        <img src="./EntropyTV._files/jsCBRq0.png" alt="undefined">
+        <span>undefined</span>
+    </div>
+    <!-- Add more tiles here -->
+</div>
 
-    <script>
-        // Initialize Shaka Player
-        function initPlayer() {
-            const video = document.getElementById('video-player');
-            const player = new shaka.Player(video);
+    <!-- Navigation Buttons -->
+    <div class="navigation-buttons">
+        <button class="navigation-button" id="prev-page">«</button>
+        <button class="navigation-button" id="next-page">»</button>
+    </div>
 
-            // Attach the player to the video element
-            video.addEventListener('loadeddata', function () {
-                console.log("Video is ready.");
-            });
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/shaka-player.compiled.js"></script>
 
-            // Handle errors
-            player.addEventListener('error', function (event) {
-                console.error('Error code', event.detail.code, 'object', event.detail);
-            });
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const tiles = document.querySelectorAll('.tile'); // Get all the tiles
 
-            // Channel selection functionality
-            document.querySelectorAll('.tile').forEach(function (tile) {
-                tile.addEventListener('click', function () {
-                    const source = tile.getAttribute('data-source');
-                    loadVideoSource(player, source);
-                });
-            });
+    tiles.forEach(function(tile) {
+      tile.addEventListener('click', function() {
+        // Get the video source URL and data-key
+        const videoSource = tile.getAttribute('data-source');
+        const dataKey = tile.getAttribute('data-key');
 
-            // Load the video source
-            function loadVideoSource(player, source) {
-                player.load(source).then(function () {
-                    console.log('Video loaded successfully.');
-                }).catch(function (error) {
-                    console.error('Error loading video: ', error);
-                });
-            }
-        }
+        // Initialize the Shaka Player
+        loadVideo(videoSource);
+        console.log('Playing stream with key:', dataKey);
+      });
+    });
 
-        // Initialize the player on page load
-        window.addEventListener('load', initPlayer);
-    </script>
-<script src="https://cdn.jsdelivr.net/npm/shaka-player@4.5.0/dist/shaka-player.compiled.js"></script>
+    function loadVideo(sourceUrl) {
+      const videoElement = document.getElementById('video-player'); // Assuming this is where you want to load the video
+      const player = new shaka.Player(videoElement);
+
+      player.load(sourceUrl).then(function() {
+        console.log('The video has been loaded successfully!');
+      }).catch(function(error) {
+        console.error('Error loading the video: ', error);
+      });
+    }
+  });
+</script>
 </body>
-    
 </html>
