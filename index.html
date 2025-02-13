@@ -70,26 +70,24 @@
                     }
                 },
                 streaming: {
+                    startAtSegmentBoundary: true,  // Ensure playback starts at a valid segment
+                    inaccurateManifestTolerance: 2, // Handle incorrect timestamps
                     bufferingGoal: 30, // Buffer goal in seconds
                     retryParameters: {
                         maxAttempts: 5, // Retry on failure
                     },
-                }
-            });
-
-            // Auto-play on buffering end
-            player.addEventListener('buffering', (event) => {
-                if (event.buffering) {
-                    console.log("Buffering...");
-                } else {
-                    console.log("Buffering finished. Resuming playback.");
-                    videoElement.play(); // Resume playing
+                },
+                manifest: {
+                    dash: {
+                        ignoreMinBufferTime: true // Ignore incorrect buffer times
+                    }
                 }
             });
 
             if (shaka.Player.isBrowserSupported()) {
                 player.load(sourceUrl).then(() => {
                     console.log('The video has been loaded successfully!');
+                    videoElement.currentTime = 0; // Reset start time
                     videoElement.play(); // Ensure playback starts
                 }).catch((error) => {
                     console.error('Error loading the video: ', error);
