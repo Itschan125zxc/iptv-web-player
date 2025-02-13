@@ -4,6 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TEST IPTV WEB</title>
+    
     <!-- Core Shaka Player -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.compiled.js"></script>
 
@@ -76,11 +77,21 @@
             // Create the player without passing the video element
             player = new shaka.Player(videoElement);
 
+            // Configure DRM (Clear Key)
             player.configure({
                 drm: {
                     clearKeys: {
                         [key.split(":")[0]]: key.split(":")[1]
                     }
+                },
+                // UI Configuration
+                ui: {
+                    controls: true, // Enable the controls
+                    cast: true, // Enable casting
+                    fullscreen: true, // Enable fullscreen button
+                    qualitySelector: true, // Enable quality selector
+                    playPause: true, // Enable play/pause button
+                    seekBar: true, // Enable seek bar
                 }
             });
 
@@ -108,9 +119,6 @@
                 console.error('Shaka Player is not supported on this browser.');
             }
         }
-
-        // Example of loading a channel when clicked
-        document.querySelector('.tile').click();
     </script>
 </body>
 </html>
