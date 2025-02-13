@@ -4,8 +4,12 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TEST IPTV WEB</title>
+    <!-- Core Shaka Player -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.compiled.js"></script>
+
+    <!-- Shaka UI module -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.js"></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -38,8 +42,6 @@
 
     <script>
         let player = null; // Global player variable
-        let currentSourceUrl = null; // Store the current video source URL
-        let availableVariants = []; // Store available variants
 
         document.addEventListener("DOMContentLoaded", function () {
             const tiles = document.querySelectorAll('.tile');
@@ -56,7 +58,6 @@
 
         function loadVideo(sourceUrl, key) {
             const videoElement = document.getElementById('video-player');
-            currentSourceUrl = sourceUrl;
 
             // Destroy existing player before creating a new one
             if (player) {
@@ -80,23 +81,26 @@
                     clearKeys: {
                         [key.split(":")[0]]: key.split(":")[1]
                     }
-                },
-                streaming: {
-                    bufferingGoal: 30, // Buffer goal in seconds
-                    retryParameters: {
-                        maxAttempts: 5, // Retry on failure
-                    },
                 }
             });
 
             // Attach the player to the video element
             player.attach(videoElement);
 
+            // Initialize Shaka UI (Overlay)
+            const ui = new shaka.ui.Overlay(player, document.getElementById('video-container'), videoElement);
+            const controls = ui.getControls();
+
+            // Check if UI is initialized
+            if (controls) {
+                console.log("Shaka UI is successfully loaded.");
+            } else {
+                console.error("Shaka UI failed to load.");
+            }
+
             if (shaka.Player.isBrowserSupported()) {
                 player.load(sourceUrl).then(() => {
                     console.log('The video has been loaded successfully!');
-                    videoElement.play(); // Ensure playback starts
-                    enableQualitySelector(); // Enable the quality selector after loading the video
                 }).catch((error) => {
                     console.error('Error loading the video: ', error);
                 });
@@ -105,85 +109,8 @@
             }
         }
 
-        // Enable quality selection using Shaka's built-in UI
-        function enableQualitySelector() {
-            const ui = new shaka.ui.Overlay(player, document.getElementById('video-container'), document.getElementById('video-player'));
-            const controls = ui.getControls();
-
-            // Ensure the controls are available and the quality control element exists
-            const qualityControl = controls.querySelector('.shaka-quality');
-
-            // Check if quality control is available
-            if (!qualityControl) {
-                console.error('Quality control UI element not found.');
-                return;
-            }
-
-            // Listen for quality change event
-            qualityControl.addEventListener('change', (event) => {
-                const selectedQuality = event.target.value;
-                changeQuality(selectedQuality);
-            });
-
-            // Fetch the available variants for the quality options
-            fetchAvailableVariants();
-        }
-
-        // Fetch available variants from the manifest
-        function fetchAvailableVariants() {
-            player.getManifest().then((manifest) => {
-                availableVariants = [];
-
-                manifest.periods.forEach((period) => {
-                    period.streamSets.forEach((streamSet) => {
-                        streamSet.streams.forEach((stream) => {
-                            if (stream.video) {
-                                availableVariants.push({
-                                    resolution: `${stream.video.width}x${stream.video.height}`,
-                                    bitrate: stream.bandwidth,
-                                    stream: stream
-                                });
-                            }
-                        });
-                    });
-                });
-
-                console.log('Available variants: ', availableVariants);
-
-                // Populate the quality options
-                populateQualitySelector();
-            });
-        }
-
-        // Populate the quality options in the quality control element
-        function populateQualitySelector() {
-            const qualityControl = document.querySelector('.shaka-quality');
-
-            // Clear existing options
-            qualityControl.innerHTML = '';
-
-            availableVariants.sort((a, b) => b.bitrate - a.bitrate); // Sort by bitrate descending
-
-            availableVariants.forEach((variant) => {
-                const option = document.createElement('option');
-                option.value = variant.resolution;
-                option.textContent = `${variant.resolution} (${Math.round(variant.bitrate / 1000)} kbps)`;
-                qualityControl.appendChild(option);
-            });
-        }
-
-        // Change the quality based on user selection
-        function changeQuality(selectedResolution) {
-            const selectedVariant = availableVariants.find(variant => variant.resolution === selectedResolution);
-
-            // Switch to the selected variant if found
-            if (selectedVariant) {
-                console.log(`Switching to quality: ${selectedResolution}`);
-                player.selectVariantTrack(selectedVariant.stream);
-            } else {
-                console.error('Selected resolution not found in available variants.');
-            }
-        }
+        // Example of loading a channel when clicked
+        document.querySelector('.tile').click();
     </script>
 </body>
 </html>
