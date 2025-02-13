@@ -48,6 +48,16 @@
             height: auto;
         }
 
+        /* Hide Shaka UI Text */
+        .shaka-overlay .shaka-controls-container * {
+            color: transparent !important;
+        }
+
+        .shaka-controls-container span,
+        .shaka-controls-container button span {
+            display: none !important;
+        }
+
         /* Channel Selector */
         #channel-selector {
             display: flex;
@@ -104,6 +114,7 @@
     </style>
 </head>
 <body>
+    <h1><i>TEST IPTV WEB</i></h1>
 
     <!-- Video Container with Shaka UI -->
     <div id="video-container">
