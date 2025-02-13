@@ -55,6 +55,25 @@
         .shaka-controls-container {
             opacity: 1 !important;
         }
+
+        /* Channel selector styling */
+        #channel-selector {
+            margin-top: 20px;
+        }
+
+        .tile {
+            display: inline-block;
+            background-color: #444;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .tile:hover {
+            background-color: #666;
+        }
     </style>
 </head>
 <body>
@@ -144,8 +163,11 @@
         // 🔥 FIX: Auto-hide Shaka text dynamically
         function observeUIChanges() {
             const observer = new MutationObserver(() => {
-                document.querySelectorAll('.shaka-controls-container span, .shaka-controls-container button span').forEach(el => {
-                    el.style.visibility = 'hidden';
+                document.querySelectorAll('.shaka-controls-container span').forEach(el => {
+                    // Hide only timestamp, stream info, etc.
+                    if (el.classList.contains('shaka-time') || el.classList.contains('shaka-text')) {
+                        el.style.visibility = 'hidden'; // Hide text elements
+                    }
                 });
             });
 
