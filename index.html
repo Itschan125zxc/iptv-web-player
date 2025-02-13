@@ -29,6 +29,14 @@
         </div>
     </div>
 
+    <!-- Quality Selector (Resolution Options) -->
+    <div id="quality-selector">
+        <label for="quality-select">Choose Quality:</label>
+        <select id="quality-select" style="display:none;">
+            <!-- Dynamically populated -->
+        </select>
+    </div>
+
     <!-- Cookie Consent Banner -->
     <div id="cookie-banner" style="display: none; position: fixed; bottom: 0; width: 100%; background-color: #333; color: white; padding: 15px; text-align: center;">
         <p>We use cookies to enhance your experience. By continuing to visit this site, you agree to our use of cookies.</p>
@@ -38,7 +46,7 @@
     <script>
         let player = null; // Global player variable
         let currentSourceUrl = null; // Store the current video source URL
-        let availableResolutions = {}; // Store available resolutions per channel
+        let availableVariants = []; // Store available variants
 
         document.addEventListener("DOMContentLoaded", function () {
             const tiles = document.querySelectorAll('.tile');
@@ -50,6 +58,12 @@
                     const key = tile.getAttribute('data-key');
                     loadVideo(videoSource, key);
                 });
+            });
+
+            // Listen for quality selector change
+            document.getElementById('quality-select').addEventListener('change', (event) => {
+                const selectedQuality = event.target.value;
+                changeQuality(selectedQuality);
             });
         });
 
@@ -95,7 +109,7 @@
                 player.load(sourceUrl).then(() => {
                     console.log('The video has been loaded successfully!');
                     videoElement.play(); // Ensure playback starts
-                    fetchAvailableResolutions(sourceUrl); // Fetch available resolutions after loading the video
+                    fetchAvailableVariants(sourceUrl); // Fetch available variants after loading the video
                 }).catch((error) => {
                     console.error('Error loading the video: ', error);
                 });
@@ -104,63 +118,63 @@
             }
         }
 
-        // Fetch available resolutions from the manifest
-        function fetchAvailableResolutions(sourceUrl) {
+        // Fetch available variants from the manifest
+        function fetchAvailableVariants(sourceUrl) {
             player.getManifest().then((manifest) => {
-                availableResolutions[sourceUrl] = [];
+                availableVariants = [];
 
                 manifest.periods.forEach((period) => {
                     period.streamSets.forEach((streamSet) => {
                         streamSet.streams.forEach((stream) => {
                             if (stream.video) {
-                                const resolution = `${stream.video.width}x${stream.video.height}`;
-                                availableResolutions[sourceUrl].push(resolution);
+                                availableVariants.push({
+                                    resolution: `${stream.video.width}x${stream.video.height}`,
+                                    bitrate: stream.bandwidth,
+                                    stream: stream
+                                });
                             }
                         });
                     });
                 });
 
-                console.log('Available resolutions for', sourceUrl, availableResolutions[sourceUrl]);
+                console.log('Available variants for', sourceUrl, availableVariants);
 
-                // Optionally, you can update the UI with available resolutions (e.g., a dropdown)
-                updateResolutionSelector(availableResolutions[sourceUrl]);
+                // Update the quality selector with available options
+                updateQualitySelector();
             });
         }
 
-        // Update the resolution selector with the available resolutions
-        function updateResolutionSelector(resolutions) {
-            const resolutionSelect = document.getElementById('resolution-select');
-            resolutionSelect.innerHTML = ''; // Clear previous options
+        // Update the quality selector with available options
+        function updateQualitySelector() {
+            const qualitySelect = document.getElementById('quality-select');
+            qualitySelect.style.display = 'block'; // Make the dropdown visible
 
-            resolutions.forEach((resolution) => {
+            // Clear existing options
+            qualitySelect.innerHTML = '';
+
+            // Sort available variants by bitrate (high -> low)
+            availableVariants.sort((a, b) => b.bitrate - a.bitrate);
+
+            // Add options based on available variants
+            availableVariants.forEach((variant, index) => {
                 const option = document.createElement('option');
-                option.value = resolution;
-                option.textContent = resolution;
-                resolutionSelect.appendChild(option);
+                option.value = variant.resolution;
+                option.textContent = `${variant.resolution} (${Math.round(variant.bitrate / 1000)} kbps)`;
+                qualitySelect.appendChild(option);
             });
-
-            // Show the resolution selector if there are available options
-            if (resolutions.length > 0) {
-                resolutionSelect.style.display = 'block';
-            } else {
-                resolutionSelect.style.display = 'none';
-            }
         }
 
-        // Change resolution dynamically based on user selection
-        document.getElementById('resolution-select').addEventListener('change', (event) => {
-            const selectedResolution = event.target.value;
-            changeResolution(selectedResolution);
-        });
+        // Change the quality based on user selection
+        function changeQuality(selectedResolution) {
+            // Find the corresponding variant for the selected resolution
+            const selectedVariant = availableVariants.find(variant => variant.resolution === selectedResolution);
 
-        // Change the resolution of the stream (simple method for now)
-        function changeResolution(resolution) {
-            if (availableResolutions[currentSourceUrl].includes(resolution)) {
-                console.log(`Changing to resolution: ${resolution}`);
-                // Here, you would implement the logic to switch to the selected resolution
-                // For simplicity, this example does not switch to the new resolution
+            // Switch to the selected variant if found
+            if (selectedVariant) {
+                console.log(`Switching to quality: ${selectedResolution}`);
+                player.selectVariantTrack(selectedVariant.stream);
             } else {
-                console.error('Selected resolution not available for this source');
+                console.error('Selected resolution not found in available variants.');
             }
         }
     </script>
