@@ -19,6 +19,7 @@
     </style>
 </head>
 <body>
+    <h1><i>TEST IPTV WEB</i></h1>
 
     <!-- Video Container -->
     <div id="video-container">
@@ -77,7 +78,7 @@
             // Create the Shaka player instance
             player = new shaka.Player(videoElement);
 
-            // Configure DRM (as you already have)
+            // Configure DRM (if any)
             player.configure({
                 drm: {
                     clearKeys: {
@@ -102,7 +103,7 @@
                     console.log('The video has been loaded successfully!');
                     videoElement.play(); // Start playback automatically
 
-                    // Initialize the UI after the player has been loaded
+                    // Initialize the UI only after the video is loaded successfully
                     initShakaUI(videoElement, player);
                 }).catch((error) => {
                     console.error('Error loading the video: ', error);
@@ -113,15 +114,19 @@
         }
 
         function initShakaUI(videoElement, player) {
-            // Create a Shaka UI overlay
-            const ui = new shaka.ui.Overlay(player, videoElement, document.getElementById('video-container'));
+            try {
+                // Create a Shaka UI overlay
+                const ui = new shaka.ui.Overlay(player, videoElement, document.getElementById('video-container'));
 
-            // You can now customize the UI controls if you want:
-            ui.configure({
-                controlPanelElements: ['play_pause', 'mute', 'volume', 'seekbar', 'fullscreen']
-            });
+                // Optionally configure the UI controls
+                ui.configure({
+                    controlPanelElements: ['play_pause', 'mute', 'volume', 'seekbar', 'fullscreen'],
+                });
 
-            // Optionally, you can style the UI further using CSS, as explained before
+                console.log("UI initialized successfully.");
+            } catch (error) {
+                console.error("Error initializing UI: ", error);
+            }
         }
     </script>
 </body>
