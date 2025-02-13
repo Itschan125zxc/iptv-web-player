@@ -74,3 +74,7 @@ body {
 .shaka-ui-container {
     visibility: visible !important;  /* Ensures the overlay UI is visible */
 }
+
+/* Hide the time text (current time, duration, etc.) */
+.shaka-time {
+    display: none !important; /* Hides the time elements in the controls */
