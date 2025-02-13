@@ -16,9 +16,10 @@
 <body>
     <h1><i>TEST IPTV WEB</i></h1>
 
-    <!-- Video Container (Shaka UI will manage this) -->
-    <div id="video-container">
-        <video id="video-player" autoplay class="shaka-video" style="display: none;" controls></video>
+    <!-- Video Container for Shaka UI Controls -->
+    <div id="video-container" style="width: 100%; height: 100%; background: black;">
+        <!-- Video element hidden, Shaka Player will manage this -->
+        <video id="video-player" class="shaka-video" style="display: none;" controls></video>
     </div>
 
     <!-- Channel Selector -->
