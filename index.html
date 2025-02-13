@@ -48,14 +48,14 @@
             height: auto;
         }
 
-        /* Hide Shaka UI Text */
-        .shaka-overlay .shaka-controls-container * {
-            color: transparent !important;
-        }
-
+        /* Hide Shaka Player text but keep UI visible */
         .shaka-controls-container span,
         .shaka-controls-container button span {
-            display: none !important;
+            visibility: hidden !important;
+        }
+
+        .shaka-controls-container {
+            opacity: 1 !important; /* Ensure UI overlay is visible */
         }
 
         /* Channel Selector */
