@@ -41,7 +41,7 @@
 
         document.addEventListener("DOMContentLoaded", function () {
             const tiles = document.querySelectorAll('.tile');
-
+            
             // When a channel is selected
             tiles.forEach(function (tile) {
                 tile.addEventListener('click', function () {
@@ -49,6 +49,12 @@
                     const key = tile.getAttribute('data-key');
                     loadVideo(videoSource, key);
                 });
+            });
+
+            // Handle Cookie consent
+            const acceptCookiesButton = document.getElementById("accept-cookies");
+            acceptCookiesButton.addEventListener("click", function () {
+                document.getElementById("cookie-banner").style.display = "none";
             });
         });
 
@@ -70,52 +76,48 @@
         }
 
         function initializePlayer(videoElement, sourceUrl, key) {
-    // Create the player without passing the video element
-    player = new shaka.Player(videoElement);
+            // Create the player without passing the video element
+            player = new shaka.Player(videoElement);
 
-    player.configure({
-        drm: {
-            clearKeys: {
-                [key.split(":")[0]]: key.split(":")[1]
-            }
-        },
-        streaming: {
-            bufferingGoal: 30, // Buffer goal in seconds
-            retryParameters: {
-                maxAttempts: 5, // Retry on failure
-            },
-            liveStream: {
-                // Ensure we treat this as a live stream
-                isLive: true,
-            },
-        }
-    });
-
-    // Attach the player to the video element
-    player.attach(videoElement);
-
-    if (shaka.Player.isBrowserSupported()) {
-        player.load(sourceUrl).then(() => {
-            console.log('The video has been loaded successfully!');
-            videoElement.play(); // Ensure playback starts
-            
-            // Set up the live stream behavior
-            const timeline = player.getVideoElement().getVideoPlaybackQuality().totalVideoFrames;
-
-            // Continuously update to the live point
-            player.getVideoElement().addEventListener('timeupdate', function () {
-                if (player.isLive()) {
-                    videoElement.currentTime = player.getSeekRange().end;
+            player.configure({
+                drm: {
+                    clearKeys: {
+                        [key.split(":")[0]]: key.split(":")[1]
+                    }
+                },
+                streaming: {
+                    bufferingGoal: 30, // Buffer goal in seconds
+                    retryParameters: {
+                        maxAttempts: 5, // Retry on failure
+                    },
                 }
             });
 
-        }).catch((error) => {
-            console.error('Error loading the video: ', error);
-        });
-    } else {
-        console.error('Shaka Player is not supported on this browser.');
-    }
-}
+            // Attach the player to the video element
+            player.attach(videoElement);
+
+            if (shaka.Player.isBrowserSupported()) {
+                player.load(sourceUrl).then(() => {
+                    console.log('The video has been loaded successfully!');
+                    videoElement.play(); // Ensure playback starts
+                    initializeUI(); // Initialize the built-in UI
+                }).catch((error) => {
+                    console.error('Error loading the video: ', error);
+                });
+            } else {
+                console.error('Shaka Player is not supported on this browser.');
+            }
+        }
+
+        // Initialize Shaka Player UI (with built-in controls)
+        function initializeUI() {
+            const ui = new shaka.ui.Overlay(player, document.getElementById('video-container'), document.getElementById('video-player'));
+            
+            // Automatically show the "Quality" button in the controls menu
+            ui.configure({
+                controlPanelElements: ['play_pause', 'volume', 'time_and_duration', 'fullscreen', 'quality'],
+            });
+        }
     </script>
 </body>
 </html>
