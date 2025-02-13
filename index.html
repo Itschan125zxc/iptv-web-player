@@ -19,7 +19,6 @@
     </style>
 </head>
 <body>
-    <h1><i>TEST IPTV WEB</i></h1>
 
     <!-- Video Container -->
     <div id="video-container">
@@ -77,7 +76,7 @@
         function initializePlayer(videoElement, sourceUrl, key) {
             // Create the Shaka player instance
             player = new shaka.Player(videoElement);
-            
+
             // Configure DRM (as you already have)
             player.configure({
                 drm: {
@@ -104,7 +103,7 @@
                     videoElement.play(); // Start playback automatically
 
                     // Initialize the UI after the player has been loaded
-                    initShakaUI(player);
+                    initShakaUI(videoElement, player);
                 }).catch((error) => {
                     console.error('Error loading the video: ', error);
                 });
@@ -113,16 +112,16 @@
             }
         }
 
-        function initShakaUI(player) {
-            // Create a Shaka UI instance
-            const ui = new shaka.ui.Player(document.getElementById('video-player'), player);
+        function initShakaUI(videoElement, player) {
+            // Create a Shaka UI overlay
+            const ui = new shaka.ui.Overlay(player, videoElement, document.getElementById('video-container'));
 
-            // Create a default UI (with controls, seekbar, etc.)
-            const controls = new shaka.ui.Controls(document.getElementById('video-player'), ui);
+            // You can now customize the UI controls if you want:
+            ui.configure({
+                controlPanelElements: ['play_pause', 'mute', 'volume', 'seekbar', 'fullscreen']
+            });
 
-            // Optionally, customize the UI:
-            controls.setVolume(0.5); // Set default volume to 50%
-            controls.setSeekBarEnabled(true); // Enable seekbar
+            // Optionally, you can style the UI further using CSS, as explained before
         }
     </script>
 </body>
