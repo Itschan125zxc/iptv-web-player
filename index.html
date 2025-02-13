@@ -49,6 +49,7 @@
     <script>
         let player = null; // Global player variable
         let availableVariants = []; // Store available variants
+        let currentSourceUrl = null; // Store the current video source URL
 
         document.addEventListener("DOMContentLoaded", function () {
             const tiles = document.querySelectorAll('.tile');
@@ -72,6 +73,7 @@
 
         function loadVideo(sourceUrl, key) {
             const videoElement = document.getElementById('video-player');
+            currentSourceUrl = sourceUrl;
 
             // Destroy existing player before creating a new one
             if (player) {
@@ -88,7 +90,7 @@
 
         function initializePlayer(videoElement, sourceUrl, key) {
             // Create the player without passing the video element
-            player = new shaka.Player();
+            player = new shaka.Player(videoElement);
 
             player.configure({
                 drm: {
