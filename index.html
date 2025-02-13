@@ -189,41 +189,41 @@
         }
 
         function initializePlayer(videoElement, sourceUrl, key) {
-    const videoContainer = document.getElementById('video-overlay');
+            const videoContainer = document.getElementById('video-overlay');
 
-    // Initialize Shaka UI Overlay
-    const ui = new shaka.ui.Overlay(new shaka.Player(videoElement), videoContainer, videoElement);
-    player = ui.getControls().getPlayer(); // Get Shaka Player instance
+            // Initialize Shaka UI Overlay
+            const ui = new shaka.ui.Overlay(new shaka.Player(videoElement), videoContainer, videoElement);
+            player = ui.getControls().getPlayer(); // Get Shaka Player instance
 
-    player.configure({
-        drm: {
-            clearKeys: {
-                [key.split(":")[0]]: key.split(":")[1]
+            player.configure({
+                drm: {
+                    clearKeys: {
+                        [key.split(":")[0]]: key.split(":")[1]
+                    }
+                },
+                streaming: {
+                    bufferingGoal: 30,
+                    retryParameters: { maxAttempts: 5 }
+                }
+            });
+
+            if (shaka.Player.isBrowserSupported()) {
+                player.load(sourceUrl).then(() => {
+                    console.log('Video loaded successfully!');
+                    videoElement.play();
+                    setTimeout(hideShakaText, 100); // Hide text after UI loads
+                }).catch(error => console.error('Error loading video:', error));
+            } else {
+                console.error('Shaka Player is not supported in this browser.');
             }
-        },
-        streaming: {
-            bufferingGoal: 30,
-            retryParameters: { maxAttempts: 5 }
         }
-    });
 
-    if (shaka.Player.isBrowserSupported()) {
-        player.load(sourceUrl).then(() => {
-            console.log('Video loaded successfully!');
-            videoElement.play();
-            setTimeout(hideShakaText, 100); // Hide text after UI loads
-        }).catch(error => console.error('Error loading video:', error));
-    } else {
-        console.error('Shaka Player is not supported in this browser.');
-    }
-}
-
-// Function to reapply styles and hide Shaka Player text
-function hideShakaText() {
-    document.querySelectorAll('.shaka-controls-container span, .shaka-controls-container button span').forEach(el => {
-        el.style.visibility = 'hidden';
-    });
-}
+        // Function to reapply styles and hide Shaka Player text
+        function hideShakaText() {
+            document.querySelectorAll('.shaka-controls-container span, .shaka-controls-container button span').forEach(el => {
+                el.style.visibility = 'hidden';
+            });
+        }
     </script>
 </body>
 </html>
