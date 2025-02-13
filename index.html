@@ -203,6 +203,7 @@ function initializePlayer(videoElement, sourceUrl, key) {
 
             // Call hideTimeControls after video is loaded
             hideTimeControls();
+            hidePlayPauseButtons();
         }).catch(error => console.error('Error loading video:', error));
     } else {
         console.error('Shaka Player is not supported in this browser.');
@@ -211,15 +212,25 @@ function initializePlayer(videoElement, sourceUrl, key) {
 
 // Function to hide time controls
 function hideTimeControls() {
-    // Select all time-related elements in the Shaka Player UI
     const timeElements = document.querySelectorAll('.shaka-time');
-
-    // Apply the styles to hide them
     timeElements.forEach(element => {
-        element.style.visibility = 'hidden';  // Hides the time text but keeps the space
-        element.style.opacity = '0';  // Makes the text fully invisible
-        element.style.pointerEvents = 'none';  // Ensures it doesn't interfere with UI interactions
+        element.style.visibility = 'hidden';
+        element.style.opacity = '0';
+        element.style.pointerEvents = 'none';
     });
+}
+
+// Function to hide play/pause buttons
+function hidePlayPauseButtons() {
+    const playButton = document.querySelector('.shaka-play-button');
+    if (playButton) {
+        playButton.style.visibility = 'hidden';
+    }
+
+    const pauseButton = document.querySelector('.shaka-pause-button');
+    if (pauseButton) {
+        pauseButton.style.visibility = 'hidden';
+    }
 }
     </script>
 </body>
