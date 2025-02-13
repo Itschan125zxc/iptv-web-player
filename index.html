@@ -77,15 +77,9 @@
                 }
             });
 
-            // Ensure video always starts at 0
-            player.addEventListener('loadedmetadata', () => {
-                videoElement.currentTime = 0;
-            });
-
             if (shaka.Player.isBrowserSupported()) {
                 player.load(sourceUrl).then(() => {
                     console.log('The video has been loaded successfully!');
-                    videoElement.currentTime = 0; // Reset start time
                     videoElement.play(); // Ensure playback starts
                 }).catch((error) => {
                     console.error('Error loading the video: ', error);
@@ -93,6 +87,14 @@
             } else {
                 console.error('Shaka Player is not supported on this browser.');
             }
+
+            // Override incorrect duration display
+            videoElement.addEventListener('durationchange', function () {
+                if (isNaN(videoElement.duration) || videoElement.duration > 100000) {
+                    console.log("Invalid duration detected, overriding...");
+                    videoElement.duration = 0;
+                }
+            });
         }
     </script>
 </body>
