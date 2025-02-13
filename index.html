@@ -61,7 +61,8 @@
         }
 
         function initializePlayer(videoElement, sourceUrl, key) {
-            player = new shaka.Player(videoElement);
+            // Create the player without passing the video element
+            player = new shaka.Player();
 
             player.configure({
                 drm: {
@@ -76,6 +77,9 @@
                     },
                 }
             });
+
+            // Attach the player to the video element
+            player.attach(videoElement);
 
             // Auto-play on buffering end
             player.addEventListener('buffering', (event) => {
