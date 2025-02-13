@@ -29,8 +29,19 @@
         </div>
     </div>
 
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-banner" style="display: none; position: fixed; bottom: 0; width: 100%; background-color: #333; color: white; padding: 15px; text-align: center;">
+        <p>We use cookies to enhance your experience. By continuing to visit this site, you agree to our use of cookies.</p>
+        <button id="accept-cookies" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; cursor: pointer;">Accept</button>
+    </div>
+
     <script>
         let player = null; // Global player variable
+
+        // Show cookie banner if the user hasn't accepted cookies
+        if (!getCookie('cookie_consent')) {
+            document.getElementById('cookie-banner').style.display = 'block';
+        }
 
         document.addEventListener("DOMContentLoaded", function () {
             const tiles = document.querySelectorAll('.tile');
@@ -41,6 +52,12 @@
                     const key = tile.getAttribute('data-key');
                     loadVideo(videoSource, key);
                 });
+            });
+
+            // Handle cookie consent
+            document.getElementById('accept-cookies').addEventListener('click', function() {
+                setCookie('cookie_consent', 'true', 365);  // Set a first-party cookie
+                document.getElementById('cookie-banner').style.display = 'none';
             });
         });
 
@@ -101,6 +118,25 @@
             } else {
                 console.error('Shaka Player is not supported on this browser.');
             }
+        }
+
+        // Set a first-party cookie
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = name + "=" + value + "; expires=" + expires.toUTCString() + "; path=/";
+        }
+
+        // Get a first-party cookie
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
         }
     </script>
 </body>
