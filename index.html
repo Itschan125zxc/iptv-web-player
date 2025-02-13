@@ -4,26 +4,112 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TEST IPTV WEB</title>
-    
-    <!-- Include Shaka Player JS and UI library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.compiled.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.js"></script>
+
+    <!-- Shaka Player & UI -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.min.css">
+
+    <!-- Custom Styles -->
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* Basic styling for the player */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        /* Video Player Container */
         #video-container {
-            max-width: 100%;
-            margin: 0 auto;
+            position: relative;
+            width: 80%;
+            max-width: 900px;
+            margin: 20px auto;
+        }
+
+        .shaka-overlay {
+            position: relative;
+            width: 100%;
+            height: auto;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        .shaka-video {
+            width: 100%;
+            height: auto;
+        }
+
+        /* Channel Selector */
+        #channel-selector {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            border: 2px solid #444;
+            border-radius: 10px;
+            transition: transform 0.2s;
+            background-color: #292929;
+            color: white;
+            width: 120px;
+        }
+
+        .tile:hover {
+            transform: scale(1.1);
+            background-color: #444;
+        }
+
+        .tile img {
+            width: 80px;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        /* Cookie Consent */
+        #cookie-banner {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        #accept-cookies {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1><i>TEST IPTV WEB</i></h1>
 
-    <!-- Video Container -->
+    <!-- Video Container with Shaka UI -->
     <div id="video-container">
-        <video id="video-player" autoplay class="shaka-video" controls></video>
+        <div id="video-overlay" class="shaka-overlay">
+            <video id="video-player" class="shaka-video" autoplay controls></video>
+        </div>
     </div>
 
     <!-- Channel Selector -->
@@ -40,28 +126,45 @@
         </div>
     </div>
 
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-banner">
+        <p>We use cookies to enhance your experience. By continuing to visit this site, you agree to our use of cookies.</p>
+        <button id="accept-cookies">Accept</button>
+    </div>
+
     <script>
-        let player = null; // Global player variable
-        let currentSourceUrl = null; // Store the current video source URL
+        let player = null;
 
         document.addEventListener("DOMContentLoaded", function () {
             const tiles = document.querySelectorAll('.tile');
 
             // When a channel is selected
-            tiles.forEach(function (tile) {
+            tiles.forEach(tile => {
                 tile.addEventListener('click', function () {
                     const videoSource = tile.getAttribute('data-source');
                     const key = tile.getAttribute('data-key');
                     loadVideo(videoSource, key);
                 });
             });
+
+            // Cookie Consent Handling
+            const banner = document.getElementById("cookie-banner");
+            const acceptBtn = document.getElementById("accept-cookies");
+
+            if (!localStorage.getItem("cookiesAccepted")) {
+                banner.style.display = "block";
+            }
+
+            acceptBtn.addEventListener("click", function () {
+                localStorage.setItem("cookiesAccepted", "true");
+                banner.style.display = "none";
+            });
         });
 
         function loadVideo(sourceUrl, key) {
             const videoElement = document.getElementById('video-player');
-            currentSourceUrl = sourceUrl;
 
-            // Destroy existing player before creating a new one
+            // Destroy the existing player before creating a new one
             if (player) {
                 player.destroy().then(() => {
                     console.log("Previous player destroyed. Loading new channel...");
@@ -75,10 +178,12 @@
         }
 
         function initializePlayer(videoElement, sourceUrl, key) {
-            // Create the Shaka player instance
-            player = new shaka.Player(videoElement);
+            const videoContainer = document.getElementById('video-overlay');
 
-            // Configure DRM (if any)
+            // Initialize Shaka UI Overlay
+            const ui = new shaka.ui.Overlay(new shaka.Player(videoElement), videoContainer, videoElement);
+            player = ui.getControls().getPlayer(); // Get Shaka Player instance
+
             player.configure({
                 drm: {
                     clearKeys: {
@@ -87,45 +192,17 @@
                 },
                 streaming: {
                     bufferingGoal: 30,
-                    retryParameters: {
-                        maxAttempts: 5
-                    }
+                    retryParameters: { maxAttempts: 5 }
                 }
             });
 
-            // Attach the player to the video element
-            player.attach(videoElement);
-
-            // Check if the browser supports Shaka Player
             if (shaka.Player.isBrowserSupported()) {
-                // Load the video
                 player.load(sourceUrl).then(() => {
-                    console.log('The video has been loaded successfully!');
-                    videoElement.play(); // Start playback automatically
-
-                    // Initialize the UI only after the video is loaded successfully
-                    initShakaUI(videoElement, player);
-                }).catch((error) => {
-                    console.error('Error loading the video: ', error);
-                });
+                    console.log('Video loaded successfully!');
+                    videoElement.play();
+                }).catch(error => console.error('Error loading video:', error));
             } else {
-                console.error('Shaka Player is not supported on this browser.');
-            }
-        }
-
-        function initShakaUI(videoElement, player) {
-            try {
-                // Create a Shaka UI overlay
-                const ui = new shaka.ui.Overlay(player, videoElement, document.getElementById('video-container'));
-
-                // Optionally configure the UI controls
-                ui.configure({
-                    controlPanelElements: ['play_pause', 'mute', 'volume', 'seekbar', 'fullscreen'],
-                });
-
-                console.log("UI initialized successfully.");
-            } catch (error) {
-                console.error("Error initializing UI: ", error);
+                console.error('Shaka Player is not supported in this browser.');
             }
         }
     </script>
