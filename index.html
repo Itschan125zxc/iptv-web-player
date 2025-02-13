@@ -4,70 +4,37 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TEST IPTV WEB</title>
-
-    <!-- Core Shaka Player -->
+    
+    <!-- Include Shaka Player JS and UI library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.compiled.js"></script>
-
-    <!-- Shaka UI module -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.js"></script>
-
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* Ensure video container takes up full screen */
+        /* Basic styling for the player */
         #video-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background: black;
-        }
-
-        /* Channel selector styling */
-        #channel-selector {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 10; /* Higher z-index so it's above the Shaka UI controls */
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        /* Channel tile styling */
-        .tile {
-            cursor: pointer;
-            display: inline-block;
-            margin: 10px;
-            text-align: center;
-        }
-
-        .tile img {
-            width: 100px;
-            height: auto;
-            display: block;
+            max-width: 100%;
             margin: 0 auto;
         }
-
-        /* Cookie banner styling */
-        #cookie-banner {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: #333;
+        
+        /* Styling for the custom play/pause button */
+        #custom-play-pause {
+            background-color: #FF5733;
             color: white;
-            padding: 15px;
-            text-align: center;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <h1><i>TEST IPTV WEB</i></h1>
 
-    <!-- Video Container for Shaka UI Controls -->
+    <!-- Video Container -->
     <div id="video-container">
-        <!-- Video element is now visible -->
-        <video id="video-player" class="shaka-video" autoplay controls style="width: 100%; height: 100%;"></video>
+        <video id="video-player" autoplay class="shaka-video" controls></video>
     </div>
 
     <!-- Channel Selector -->
@@ -85,13 +52,14 @@
     </div>
 
     <!-- Cookie Consent Banner -->
-    <div id="cookie-banner">
+    <div id="cookie-banner" style="display: none; position: fixed; bottom: 0; width: 100%; background-color: #333; color: white; padding: 15px; text-align: center;">
         <p>We use cookies to enhance your experience. By continuing to visit this site, you agree to our use of cookies.</p>
-        <button id="accept-cookies">Accept</button>
+        <button id="accept-cookies" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; cursor: pointer;">Accept</button>
     </div>
 
     <script>
         let player = null; // Global player variable
+        let currentSourceUrl = null; // Store the current video source URL
 
         document.addEventListener("DOMContentLoaded", function () {
             const tiles = document.querySelectorAll('.tile');
@@ -108,6 +76,7 @@
 
         function loadVideo(sourceUrl, key) {
             const videoElement = document.getElementById('video-player');
+            currentSourceUrl = sourceUrl;
 
             // Destroy existing player before creating a new one
             if (player) {
@@ -123,51 +92,67 @@
         }
 
         function initializePlayer(videoElement, sourceUrl, key) {
-            // Create the player with the visible video element
+            // Create the Shaka player instance
             player = new shaka.Player(videoElement);
-
-            // Configure DRM (Clear Key)
+            
+            // Configure DRM (as you already have)
             player.configure({
                 drm: {
                     clearKeys: {
                         [key.split(":")[0]]: key.split(":")[1]
                     }
                 },
-                // UI Configuration
-                ui: {
-                    controls: true, // Enable the controls
-                    cast: true, // Enable casting
-                    fullscreen: true, // Enable fullscreen button
-                    qualitySelector: true, // Enable quality selector
-                    playPause: true, // Enable play/pause button
-                    seekBar: true, // Enable seek bar
+                streaming: {
+                    bufferingGoal: 30,
+                    retryParameters: {
+                        maxAttempts: 5
+                    }
                 }
             });
 
             // Attach the player to the video element
             player.attach(videoElement);
 
-            // Initialize Shaka UI (Overlay)
-            const ui = new shaka.ui.Overlay(player, document.getElementById('video-container'), videoElement);
-            const controls = ui.getControls();
-
-            // Check if UI is initialized
-            if (controls) {
-                console.log("Shaka UI is successfully loaded.");
-            } else {
-                console.error("Shaka UI failed to load.");
-            }
-
             // Check if the browser supports Shaka Player
             if (shaka.Player.isBrowserSupported()) {
+                // Load the video
                 player.load(sourceUrl).then(() => {
                     console.log('The video has been loaded successfully!');
+                    videoElement.play(); // Start playback automatically
+
+                    // Initialize the UI after the player has been loaded
+                    initShakaUI(player);
                 }).catch((error) => {
                     console.error('Error loading the video: ', error);
                 });
             } else {
                 console.error('Shaka Player is not supported on this browser.');
             }
+        }
+
+        function initShakaUI(player) {
+            // Create a Shaka UI instance
+            const ui = new shaka.ui.Player(document.getElementById('video-player'), player);
+
+            // Create a default UI (with controls, seekbar, etc.)
+            const controls = new shaka.ui.Controls(document.getElementById('video-player'), ui);
+
+            // Optionally, customize the UI:
+            controls.setVolume(0.5); // Set default volume to 50%
+            controls.setSeekBarEnabled(true); // Enable seekbar
+
+            // You can add custom controls here if needed (e.g., custom buttons)
+            const customPlayPauseButton = document.createElement('button');
+            customPlayPauseButton.id = 'custom-play-pause';
+            customPlayPauseButton.innerHTML = 'Play/Pause';
+            customPlayPauseButton.addEventListener('click', function () {
+                if (player.isPlaying()) {
+                    player.pause();
+                } else {
+                    player.play();
+                }
+            });
+            document.body.appendChild(customPlayPauseButton); // Append to the page
         }
     </script>
 </body>
