@@ -38,6 +38,7 @@
     <script>
         let player = null; // Global player variable
         let currentSourceUrl = null; // Store the current video source URL
+        let availableResolutions = {}; // Store available resolutions per channel
 
         document.addEventListener("DOMContentLoaded", function () {
             const tiles = document.querySelectorAll('.tile');
@@ -94,11 +95,72 @@
                 player.load(sourceUrl).then(() => {
                     console.log('The video has been loaded successfully!');
                     videoElement.play(); // Ensure playback starts
+                    fetchAvailableResolutions(sourceUrl); // Fetch available resolutions after loading the video
                 }).catch((error) => {
                     console.error('Error loading the video: ', error);
                 });
             } else {
                 console.error('Shaka Player is not supported on this browser.');
+            }
+        }
+
+        // Fetch available resolutions from the manifest
+        function fetchAvailableResolutions(sourceUrl) {
+            player.getManifest().then((manifest) => {
+                availableResolutions[sourceUrl] = [];
+
+                manifest.periods.forEach((period) => {
+                    period.streamSets.forEach((streamSet) => {
+                        streamSet.streams.forEach((stream) => {
+                            if (stream.video) {
+                                const resolution = `${stream.video.width}x${stream.video.height}`;
+                                availableResolutions[sourceUrl].push(resolution);
+                            }
+                        });
+                    });
+                });
+
+                console.log('Available resolutions for', sourceUrl, availableResolutions[sourceUrl]);
+
+                // Optionally, you can update the UI with available resolutions (e.g., a dropdown)
+                updateResolutionSelector(availableResolutions[sourceUrl]);
+            });
+        }
+
+        // Update the resolution selector with the available resolutions
+        function updateResolutionSelector(resolutions) {
+            const resolutionSelect = document.getElementById('resolution-select');
+            resolutionSelect.innerHTML = ''; // Clear previous options
+
+            resolutions.forEach((resolution) => {
+                const option = document.createElement('option');
+                option.value = resolution;
+                option.textContent = resolution;
+                resolutionSelect.appendChild(option);
+            });
+
+            // Show the resolution selector if there are available options
+            if (resolutions.length > 0) {
+                resolutionSelect.style.display = 'block';
+            } else {
+                resolutionSelect.style.display = 'none';
+            }
+        }
+
+        // Change resolution dynamically based on user selection
+        document.getElementById('resolution-select').addEventListener('change', (event) => {
+            const selectedResolution = event.target.value;
+            changeResolution(selectedResolution);
+        });
+
+        // Change the resolution of the stream (simple method for now)
+        function changeResolution(resolution) {
+            if (availableResolutions[currentSourceUrl].includes(resolution)) {
+                console.log(`Changing to resolution: ${resolution}`);
+                // Here, you would implement the logic to switch to the selected resolution
+                // For simplicity, this example does not switch to the new resolution
+            } else {
+                console.error('Selected resolution not available for this source');
             }
         }
     </script>
