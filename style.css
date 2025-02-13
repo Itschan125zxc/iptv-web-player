@@ -65,18 +65,31 @@ body {
     display: none !important;  /* This hides text (subtitles, captions) */
 }
 
-/* Ensure video player remains visible */
+/* Hide play/pause button */
+.shaka-ui .shaka-play-button {
+    visibility: hidden !important;
+}
+
+/* Hide the time elements (current time, duration, etc.) */
+.shaka-ui .shaka-time {
+    visibility: hidden !important;  /* Hides the time text but keeps the space */
+    opacity: 0 !important;  /* Makes the text fully invisible */
+    pointer-events: none !important;  /* Ensures it doesn't interfere with UI interactions */
+}
+
+/* Ensure video player is visible */
 #video-player {
     visibility: visible;  /* Video stays visible */
 }
 
-/* Ensure overlay UI controls are visible */
+/* Ensure the UI controls remain visible (excluding hidden buttons) */
 .shaka-ui-container {
-    visibility: visible !important;  /* Ensures the overlay UI is visible */
+    visibility: visible !important;  /* UI controls remain visible */
 }
 
-.shaka-time {
-    visibility: hidden !important;  /* Hides the time text but keeps the space */
-    opacity: 0 !important;  /* Ensures it is fully invisible */
-    pointer-events: none !important; /* Ensures it doesn't interfere with UI interactions */
+/* Optional: Hide the volume, mute, and other controls if needed */
+.shaka-ui .shaka-volume-container,
+.shaka-ui .shaka-mute-button,
+.shaka-ui .shaka-fullscreen-button {
+    visibility: hidden !important;
 }
