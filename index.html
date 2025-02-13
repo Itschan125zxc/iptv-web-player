@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TEST IPTV WEB</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.compiled.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -107,23 +108,72 @@
         // Enable quality selection using Shaka's built-in UI
         function enableQualitySelector() {
             const ui = new shaka.ui.Overlay(player, document.getElementById('video-container'), document.getElementById('video-player'));
-            ui.configure({
-                'controlPanelElements': ['play_pause', 'time_and_duration', 'volume', 'mute', 'fullscreen', 'quality'], // Enable quality control in built-in UI
+            const controls = ui.getControls();
+
+            // Ensure the controls are available and the quality control element exists
+            const qualityControl = controls.querySelector('.shaka-quality');
+
+            // Check if quality control is available
+            if (!qualityControl) {
+                console.error('Quality control UI element not found.');
+                return;
+            }
+
+            // Listen for quality change event
+            qualityControl.addEventListener('change', (event) => {
+                const selectedQuality = event.target.value;
+                changeQuality(selectedQuality);
             });
 
-            // Listen for changes in quality
-            const qualityControl = ui.getControls().querySelector('.shaka-quality');
-            if (qualityControl) {
-                qualityControl.addEventListener('change', (event) => {
-                    const selectedQuality = event.target.value;
-                    changeQuality(selectedQuality);
+            // Fetch the available variants for the quality options
+            fetchAvailableVariants();
+        }
+
+        // Fetch available variants from the manifest
+        function fetchAvailableVariants() {
+            player.getManifest().then((manifest) => {
+                availableVariants = [];
+
+                manifest.periods.forEach((period) => {
+                    period.streamSets.forEach((streamSet) => {
+                        streamSet.streams.forEach((stream) => {
+                            if (stream.video) {
+                                availableVariants.push({
+                                    resolution: `${stream.video.width}x${stream.video.height}`,
+                                    bitrate: stream.bandwidth,
+                                    stream: stream
+                                });
+                            }
+                        });
+                    });
                 });
-            }
+
+                console.log('Available variants: ', availableVariants);
+
+                // Populate the quality options
+                populateQualitySelector();
+            });
+        }
+
+        // Populate the quality options in the quality control element
+        function populateQualitySelector() {
+            const qualityControl = document.querySelector('.shaka-quality');
+
+            // Clear existing options
+            qualityControl.innerHTML = '';
+
+            availableVariants.sort((a, b) => b.bitrate - a.bitrate); // Sort by bitrate descending
+
+            availableVariants.forEach((variant) => {
+                const option = document.createElement('option');
+                option.value = variant.resolution;
+                option.textContent = `${variant.resolution} (${Math.round(variant.bitrate / 1000)} kbps)`;
+                qualityControl.appendChild(option);
+            });
         }
 
         // Change the quality based on user selection
         function changeQuality(selectedResolution) {
-            // Find the corresponding variant for the selected resolution
             const selectedVariant = availableVariants.find(variant => variant.resolution === selectedResolution);
 
             // Switch to the selected variant if found
