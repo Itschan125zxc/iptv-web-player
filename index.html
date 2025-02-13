@@ -29,14 +29,6 @@
         </div>
     </div>
 
-    <!-- Quality Selector (Resolution Options) -->
-    <div id="quality-selector">
-        <label for="quality-select">Choose Quality:</label>
-        <select id="quality-select" style="display:none;">
-            <!-- Dynamically populated -->
-        </select>
-    </div>
-
     <!-- Cookie Consent Banner -->
     <div id="cookie-banner" style="display: none; position: fixed; bottom: 0; width: 100%; background-color: #333; color: white; padding: 15px; text-align: center;">
         <p>We use cookies to enhance your experience. By continuing to visit this site, you agree to our use of cookies.</p>
@@ -58,12 +50,6 @@
                     const key = tile.getAttribute('data-key');
                     loadVideo(videoSource, key);
                 });
-            });
-
-            // Listen for quality selector change
-            document.getElementById('quality-select').addEventListener('change', (event) => {
-                const selectedQuality = event.target.value;
-                changeQuality(selectedQuality);
             });
         });
 
@@ -109,7 +95,7 @@
                 player.load(sourceUrl).then(() => {
                     console.log('The video has been loaded successfully!');
                     videoElement.play(); // Ensure playback starts
-                    fetchAvailableVariants(sourceUrl); // Fetch available variants after loading the video
+                    enableQualitySelector(); // Enable the quality selector after loading the video
                 }).catch((error) => {
                     console.error('Error loading the video: ', error);
                 });
@@ -118,50 +104,21 @@
             }
         }
 
-        // Fetch available variants from the manifest
-        function fetchAvailableVariants(sourceUrl) {
-            player.getManifest().then((manifest) => {
-                availableVariants = [];
+        // Enable quality selection using Shaka's built-in UI
+        function enableQualitySelector() {
+            const ui = new shaka.ui.Overlay(player, document.getElementById('video-container'), document.getElementById('video-player'));
+            ui.configure({
+                'controlPanelElements': ['play_pause', 'time_and_duration', 'volume', 'mute', 'fullscreen', 'quality'], // Enable quality control in built-in UI
+            });
 
-                manifest.periods.forEach((period) => {
-                    period.streamSets.forEach((streamSet) => {
-                        streamSet.streams.forEach((stream) => {
-                            if (stream.video) {
-                                availableVariants.push({
-                                    resolution: `${stream.video.width}x${stream.video.height}`,
-                                    bitrate: stream.bandwidth,
-                                    stream: stream
-                                });
-                            }
-                        });
-                    });
+            // Listen for changes in quality
+            const qualityControl = ui.getControls().querySelector('.shaka-quality');
+            if (qualityControl) {
+                qualityControl.addEventListener('change', (event) => {
+                    const selectedQuality = event.target.value;
+                    changeQuality(selectedQuality);
                 });
-
-                console.log('Available variants for', sourceUrl, availableVariants);
-
-                // Update the quality selector with available options
-                updateQualitySelector();
-            });
-        }
-
-        // Update the quality selector with available options
-        function updateQualitySelector() {
-            const qualitySelect = document.getElementById('quality-select');
-            qualitySelect.style.display = 'block'; // Make the dropdown visible
-
-            // Clear existing options
-            qualitySelect.innerHTML = '';
-
-            // Sort available variants by bitrate (high -> low)
-            availableVariants.sort((a, b) => b.bitrate - a.bitrate);
-
-            // Add options based on available variants
-            availableVariants.forEach((variant, index) => {
-                const option = document.createElement('option');
-                option.value = variant.resolution;
-                option.textContent = `${variant.resolution} (${Math.round(variant.bitrate / 1000)} kbps)`;
-                qualitySelect.appendChild(option);
-            });
+            }
         }
 
         // Change the quality based on user selection
