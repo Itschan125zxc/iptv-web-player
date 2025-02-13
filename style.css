@@ -60,36 +60,27 @@ body {
     display: block;  /* Make span a block element to allow alignment */
 }
 
-/* Hide any text elements like subtitles or error messages */
-.shaka-video-container .shaka-text {
-    display: none !important;  /* This hides text (subtitles, captions) */
-}
-
-/* Hide play/pause button */
-.shaka-ui .shaka-play-button {
+/* Hide all Shaka Player UI controls (play/pause, timestamp, etc.) */
+.shaka-ui {
     visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;  /* Ensures no interaction with hidden controls */
 }
 
-/* Hide the time elements (current time, duration, etc.) */
-.shaka-ui .shaka-time {
-    visibility: hidden !important;  /* Hides the time text but keeps the space */
-    opacity: 0 !important;  /* Makes the text fully invisible */
-    pointer-events: none !important;  /* Ensures it doesn't interfere with UI interactions */
-}
-
-/* Ensure video player is visible */
+/* Ensure the video player remains visible */
 #video-player {
-    visibility: visible;  /* Video stays visible */
+    visibility: visible !important;
+    opacity: 1 !important; /* Video remains visible */
 }
 
-/* Ensure the UI controls remain visible (excluding hidden buttons) */
+/* Ensure the Shaka UI overlay (the controls container) remains visible */
 .shaka-ui-container {
-    visibility: hidden !important;  /* UI controls remain visible */
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
-/* Optional: Hide the volume, mute, and other controls if needed */
-.shaka-ui .shaka-volume-container,
-.shaka-ui .shaka-mute-button,
-.shaka-ui .shaka-fullscreen-button {
-    visibility: hidden !important;
+/* Ensure the overlay container does not interfere with UI */
+.shaka-ui-overlay {
+    visibility: visible !important;  /* Keep the overlay visible */
+    opacity: 1 !important;
 }
