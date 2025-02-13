@@ -84,7 +84,7 @@ body {
 
 /* Ensure the UI controls remain visible (excluding hidden buttons) */
 .shaka-ui-container {
-    visibility: visible !important;  /* UI controls remain visible */
+    visibility: hidden !important;  /* UI controls remain visible */
 }
 
 /* Optional: Hide the volume, mute, and other controls if needed */
