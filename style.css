@@ -60,29 +60,17 @@ body {
     display: block;  /* Make span a block element to allow alignment */
 }
 
-/* Custom Seek Bar */
-.shaka-ui .shaka-seek-bar {
-    background-color: #333; /* Dark background */
-    height: 5px; /* Slimmer seek bar */
+/* Hide any text elements like subtitles or error messages */
+.shaka-video-container .shaka-text {
+    display: none !important;  /* This hides text (subtitles, captions) */
 }
 
-/* Custom Play Button */
-.shaka-ui .shaka-play-button {
-    background-color: #FF5733; /* Orange background for play button */
+/* Ensure video player remains visible */
+#video-player {
+    visibility: visible;  /* Video stays visible */
 }
 
-/* Custom Pause Button */
-.shaka-ui .shaka-pause-button {
-    background-color: #33FF57; /* Green background for pause button */
-}
-
-/* Custom Volume Control */
-.shaka-ui .shaka-volume-slider {
-    background-color: #444; /* Dark background for volume slider */
-    height: 8px; /* Taller slider */
-}
-
-/* Custom Fullscreen Button */
-.shaka-ui .shaka-fullscreen-button {
-    background-color: #0078d4; /* Blue background for fullscreen button */
+/* Ensure overlay UI controls are visible */
+.shaka-ui-container {
+    visibility: visible !important;  /* Ensures the overlay UI is visible */
 }
