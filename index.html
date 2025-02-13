@@ -41,7 +41,7 @@
 
         document.addEventListener("DOMContentLoaded", function () {
             const tiles = document.querySelectorAll('.tile');
-            
+
             // When a channel is selected
             tiles.forEach(function (tile) {
                 tile.addEventListener('click', function () {
@@ -49,12 +49,6 @@
                     const key = tile.getAttribute('data-key');
                     loadVideo(videoSource, key);
                 });
-            });
-
-            // Handle Cookie consent
-            const acceptCookiesButton = document.getElementById("accept-cookies");
-            acceptCookiesButton.addEventListener("click", function () {
-                document.getElementById("cookie-banner").style.display = "none";
             });
         });
 
@@ -90,7 +84,6 @@
                     retryParameters: {
                         maxAttempts: 5, // Retry on failure
                     },
-                    preferredAudioLanguage: 'en',
                 }
             });
 
@@ -101,23 +94,12 @@
                 player.load(sourceUrl).then(() => {
                     console.log('The video has been loaded successfully!');
                     videoElement.play(); // Ensure playback starts
-                    initializeUI(); // Initialize the built-in UI
                 }).catch((error) => {
                     console.error('Error loading the video: ', error);
                 });
             } else {
                 console.error('Shaka Player is not supported on this browser.');
             }
-        }
-
-        // Initialize Shaka Player UI (with built-in controls)
-        function initializeUI() {
-            const ui = new shaka.ui.Overlay(player, document.getElementById('video-container'), document.getElementById('video-player'));
-            
-            // Automatically show the "Quality" button in the controls menu
-            ui.configure({
-                controlPanelElements: ['play_pause', 'volume', 'time_and_duration', 'fullscreen', 'quality', 'settings'],
-            });
         }
     </script>
 </body>
