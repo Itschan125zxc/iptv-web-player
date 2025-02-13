@@ -80,8 +80,3 @@ body {
     opacity: 0 !important;  /* Ensures it is fully invisible */
     pointer-events: none !important; /* Ensures it doesn't interfere with UI interactions */
 }
-
-/* Hide the time container or other UI elements */
-.shaka-ui .shaka-controls .shaka-time-container {
-    display: none !important;  /* Completely hides the time container */
-}
