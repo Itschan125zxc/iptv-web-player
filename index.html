@@ -74,17 +74,23 @@
                     retryParameters: {
                         maxAttempts: 5, // Retry on failure
                     },
-                },
-                manifest: {
-                    live: {
-                        usePersistentState: true, // Ensure the stream remains live
-                    }
+                }
+            });
+
+            // Auto-play on buffering end
+            player.addEventListener('buffering', (event) => {
+                if (event.buffering) {
+                    console.log("Buffering...");
+                } else {
+                    console.log("Buffering finished. Resuming playback.");
+                    videoElement.play(); // Resume playing
                 }
             });
 
             if (shaka.Player.isBrowserSupported()) {
                 player.load(sourceUrl).then(() => {
                     console.log('The video has been loaded successfully!');
+                    videoElement.play(); // Ensure playback starts
                 }).catch((error) => {
                     console.error('Error loading the video: ', error);
                 });
