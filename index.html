@@ -55,6 +55,9 @@
                     const videoSource = tile.getAttribute('data-source');
                     const key = tile.getAttribute('data-key');
                     loadVideo(videoSource, key);
+
+                    // Get and log the current resolution
+                    logResolution();
                 });
             });
         });
@@ -135,6 +138,16 @@
                 if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
             }
             return null;
+        }
+
+        // Function to log the current resolution
+        function logResolution() {
+            if (player) {
+                const stats = player.getStats();
+                const width = stats.width;
+                const height = stats.height;
+                console.log(`Current resolution: ${width}x${height}`);
+            }
         }
     </script>
 </body>
