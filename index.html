@@ -90,6 +90,7 @@
                     retryParameters: {
                         maxAttempts: 5, // Retry on failure
                     },
+                    preferredAudioLanguage: 'en',
                 }
             });
 
@@ -115,7 +116,7 @@
             
             // Automatically show the "Quality" button in the controls menu
             ui.configure({
-                controlPanelElements: ['play_pause', 'volume', 'time_and_duration', 'fullscreen', 'quality'],
+                controlPanelElements: ['play_pause', 'volume', 'time_and_duration', 'fullscreen', 'quality', 'settings'],
             });
         }
     </script>
