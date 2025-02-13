@@ -75,6 +75,8 @@ body {
     visibility: visible !important;  /* Ensures the overlay UI is visible */
 }
 
-/* Hide the time text (current time, duration, etc.) */
+/* Set the time text (current time, duration, etc.) to transparent to hide it */
 .shaka-time {
-    display: none !important; /* Hides the time elements in the controls */
+    color: transparent !important; /* Makes the time text invisible */
+    pointer-events: none !important; /* Ensures it doesn't interfere with other UI elements */
+}
