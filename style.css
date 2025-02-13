@@ -59,3 +59,30 @@ body {
     text-align: center;  /* Center the text */
     display: block;  /* Make span a block element to allow alignment */
 }
+
+/* Custom Seek Bar */
+.shaka-ui .shaka-seek-bar {
+    background-color: #333; /* Dark background */
+    height: 5px; /* Slimmer seek bar */
+}
+
+/* Custom Play Button */
+.shaka-ui .shaka-play-button {
+    background-color: #FF5733; /* Orange background for play button */
+}
+
+/* Custom Pause Button */
+.shaka-ui .shaka-pause-button {
+    background-color: #33FF57; /* Green background for pause button */
+}
+
+/* Custom Volume Control */
+.shaka-ui .shaka-volume-slider {
+    background-color: #444; /* Dark background for volume slider */
+    height: 8px; /* Taller slider */
+}
+
+/* Custom Fullscreen Button */
+.shaka-ui .shaka-fullscreen-button {
+    background-color: #0078d4; /* Blue background for fullscreen button */
+}
