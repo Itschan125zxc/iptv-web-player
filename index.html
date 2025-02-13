@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TEST IPTV WEB</title>
 
     <!-- Shaka Player & UI -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.min.css">
-
-    <!-- Custom Styles -->
-    <link rel="stylesheet" href="style.css">
 
     <style>
         body {
@@ -54,62 +51,9 @@
             visibility: hidden !important;
         }
 
+        /* Ensure UI overlay is always visible */
         .shaka-controls-container {
-            opacity: 1 !important; /* Ensure UI overlay is visible */
-        }
-
-        /* Channel Selector */
-        #channel-selector {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .tile {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px;
-            cursor: pointer;
-            border: 2px solid #444;
-            border-radius: 10px;
-            transition: transform 0.2s;
-            background-color: #292929;
-            color: white;
-            width: 120px;
-        }
-
-        .tile:hover {
-            transform: scale(1.1);
-            background-color: #444;
-        }
-
-        .tile img {
-            width: 80px;
-            height: auto;
-            border-radius: 5px;
-        }
-
-        /* Cookie Consent */
-        #cookie-banner {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: #333;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-
-        #accept-cookies {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
+            opacity: 1 !important;
         }
     </style>
 </head>
@@ -127,20 +71,12 @@
     <div id="channel-selector">
         <div class="tile" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" 
             data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
-            <img src="https://i.imgur.com/lyjZUke.png" alt="TV 5 HD">
             <span>TV 5 HD</span>
         </div>
         <div class="tile" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" 
             data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
-            <img src="https://i.imgur.com/LvswLsB.png" alt="ONE SPORTS">
             <span>ONE SPORTS</span>
         </div>
-    </div>
-
-    <!-- Cookie Consent Banner -->
-    <div id="cookie-banner">
-        <p>We use cookies to enhance your experience. By continuing to visit this site, you agree to our use of cookies.</p>
-        <button id="accept-cookies">Accept</button>
     </div>
 
     <script>
@@ -156,19 +92,6 @@
                     const key = tile.getAttribute('data-key');
                     loadVideo(videoSource, key);
                 });
-            });
-
-            // Cookie Consent Handling
-            const banner = document.getElementById("cookie-banner");
-            const acceptBtn = document.getElementById("accept-cookies");
-
-            if (!localStorage.getItem("cookiesAccepted")) {
-                banner.style.display = "block";
-            }
-
-            acceptBtn.addEventListener("click", function () {
-                localStorage.setItem("cookiesAccepted", "true");
-                banner.style.display = "none";
             });
         });
 
@@ -211,18 +134,26 @@
                 player.load(sourceUrl).then(() => {
                     console.log('Video loaded successfully!');
                     videoElement.play();
-                    setTimeout(hideShakaText, 100); // Hide text after UI loads
+                    observeUIChanges(); // Fix: Auto-hide Shaka text on UI changes
                 }).catch(error => console.error('Error loading video:', error));
             } else {
                 console.error('Shaka Player is not supported in this browser.');
             }
         }
 
-        // Function to reapply styles and hide Shaka Player text
-        function hideShakaText() {
-            document.querySelectorAll('.shaka-controls-container span, .shaka-controls-container button span').forEach(el => {
-                el.style.visibility = 'hidden';
+        // 🔥 FIX: Auto-hide Shaka text dynamically
+        function observeUIChanges() {
+            const observer = new MutationObserver(() => {
+                document.querySelectorAll('.shaka-controls-container span, .shaka-controls-container button span').forEach(el => {
+                    el.style.visibility = 'hidden';
+                });
             });
+
+            // Watch for UI changes inside Shaka's control container
+            const targetNode = document.querySelector('.shaka-controls-container');
+            if (targetNode) {
+                observer.observe(targetNode, { childList: true, subtree: true });
+            }
         }
     </script>
 </body>
