@@ -77,6 +77,16 @@
                 }
             });
 
+            // Auto-play on buffering end
+            player.addEventListener('buffering', (event) => {
+                if (event.buffering) {
+                    console.log("Buffering...");
+                } else {
+                    console.log("Buffering finished. Resuming playback.");
+                    videoElement.play(); // Resume playing
+                }
+            });
+
             if (shaka.Player.isBrowserSupported()) {
                 player.load(sourceUrl).then(() => {
                     console.log('The video has been loaded successfully!');
@@ -87,14 +97,6 @@
             } else {
                 console.error('Shaka Player is not supported on this browser.');
             }
-
-            // Override incorrect duration display
-            videoElement.addEventListener('durationchange', function () {
-                if (isNaN(videoElement.duration) || videoElement.duration > 100000) {
-                    console.log("Invalid duration detected, overriding...");
-                    videoElement.duration = 0;
-                }
-            });
         }
     </script>
 </body>
