@@ -162,22 +162,22 @@
         });
 
         function loadVideo(sourceUrl, key) {
-            const videoElement = document.getElementById('video-player');
+    const videoElement = document.getElementById('video-player');
 
-            // Destroy the existing player before creating a new one
-            if (player) {
-                player.destroy().then(() => {
-                    console.log("Previous player destroyed. Loading new channel...");
-                    initializePlayer(videoElement, sourceUrl, key);
-                }).catch((error) => {
-                    console.error("Error destroying previous player: ", error);
-                });
-            } else {
-                initializePlayer(videoElement, sourceUrl, key);
-            }
-        }
+    // Destroy the existing player before creating a new one
+    if (player) {
+        player.destroy().then(() => {
+            console.log("Previous player destroyed. Loading new channel...");
+            initializePlayer(videoElement, sourceUrl, key);
+        }).catch((error) => {
+            console.error("Error destroying previous player: ", error);
+        });
+    } else {
+        initializePlayer(videoElement, sourceUrl, key);
+    }
+}
 
-        function initializePlayer(videoElement, sourceUrl, key) {
+function initializePlayer(videoElement, sourceUrl, key) {
     const videoContainer = document.getElementById('video-overlay');
 
     // Initialize Shaka UI Overlay
@@ -200,11 +200,26 @@
         player.load(sourceUrl).then(() => {
             console.log('Video loaded successfully!');
             videoElement.play();
-            // You can ensure here the video is playing, and all UI controls work as expected
+
+            // Call hideTimeControls after video is loaded
+            hideTimeControls();
         }).catch(error => console.error('Error loading video:', error));
     } else {
         console.error('Shaka Player is not supported in this browser.');
     }
+}
+
+// Function to hide time controls
+function hideTimeControls() {
+    // Select all time-related elements in the Shaka Player UI
+    const timeElements = document.querySelectorAll('.shaka-time');
+
+    // Apply the styles to hide them
+    timeElements.forEach(element => {
+        element.style.visibility = 'hidden';  // Hides the time text but keeps the space
+        element.style.opacity = '0';  // Makes the text fully invisible
+        element.style.pointerEvents = 'none';  // Ensures it doesn't interfere with UI interactions
+    });
 }
     </script>
 </body>
