@@ -15,6 +15,17 @@
         <video id="video-player" autoplay class="shaka-video" controls></video>
     </div>
 
+    <!-- Resolution Selector -->
+    <div id="resolution-selector">
+        <label for="resolution">Choose resolution:</label>
+        <select id="resolution">
+            <option value="auto">Auto</option>
+            <option value="720p">720p</option>
+            <option value="1080p">1080p</option>
+            <option value="4k">4k</option>
+        </select>
+    </div>
+
     <!-- Channel Selector -->
     <div id="channel-selector">
         <div class="tile" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" 
@@ -37,28 +48,25 @@
 
     <script>
         let player = null; // Global player variable
+        let availableVariants = []; // Store available variants
 
-        // Automatically accept cookies and hide the banner
         document.addEventListener("DOMContentLoaded", function () {
-            // Automatically set cookie consent and hide banner
-            if (!getCookie('cookie_consent')) {
-                setCookie('cookie_consent', 'true', 365);  // Automatically accept cookies
-            }
-
-            // Hide the cookie consent banner immediately
-            document.getElementById('cookie-banner').style.display = 'none';
-
             const tiles = document.querySelectorAll('.tile');
+            const resolutionSelector = document.getElementById('resolution');
 
+            // When a channel is selected
             tiles.forEach(function (tile) {
                 tile.addEventListener('click', function () {
                     const videoSource = tile.getAttribute('data-source');
                     const key = tile.getAttribute('data-key');
                     loadVideo(videoSource, key);
-
-                    // Get and log the current resolution
-                    logResolution();
                 });
+            });
+
+            // When resolution is selected from dropdown
+            resolutionSelector.addEventListener('change', function (event) {
+                const selectedResolution = event.target.value;
+                changeResolution(selectedResolution);
             });
         });
 
@@ -99,20 +107,13 @@
             // Attach the player to the video element
             player.attach(videoElement);
 
-            // Auto-play on buffering end
-            player.addEventListener('buffering', (event) => {
-                if (event.buffering) {
-                    console.log("Buffering...");
-                } else {
-                    console.log("Buffering finished. Resuming playback.");
-                    videoElement.play(); // Resume playing
-                }
-            });
-
             if (shaka.Player.isBrowserSupported()) {
                 player.load(sourceUrl).then(() => {
                     console.log('The video has been loaded successfully!');
                     videoElement.play(); // Ensure playback starts
+
+                    // Store available variants for resolution change
+                    availableVariants = player.getVariants();
                 }).catch((error) => {
                     console.error('Error loading the video: ', error);
                 });
@@ -121,32 +122,39 @@
             }
         }
 
-        // Set a first-party cookie
-        function setCookie(name, value, days) {
-            const expires = new Date();
-            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-            document.cookie = name + "=" + value + "; expires=" + expires.toUTCString() + "; path=/";
-        }
-
-        // Get a first-party cookie
-        function getCookie(name) {
-            const nameEQ = name + "=";
-            const ca = document.cookie.split(';');
-            for (let i = 0; i < ca.length; i++) {
-                let c = ca[i];
-                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+        // Function to change the resolution based on user selection
+        function changeResolution(selectedResolution) {
+            if (!availableVariants.length) {
+                console.log("No variants available.");
+                return;
             }
-            return null;
-        }
 
-        // Function to log the current resolution
-        function logResolution() {
-            if (player) {
-                const stats = player.getStats();
-                const width = stats.width;
-                const height = stats.height;
-                console.log(`Current resolution: ${width}x${height}`);
+            let selectedVariant = null;
+
+            // Choose resolution based on the user selection
+            if (selectedResolution === 'auto') {
+                // Auto resolution: Let Shaka Player handle resolution selection based on bandwidth
+                player.setAutoPlay(true);
+                console.log("Auto resolution selected");
+                return;
+            }
+
+            // Find the matching resolution
+            availableVariants.forEach(variant => {
+                if (selectedResolution === '720p' && variant.width === 1280 && variant.height === 720) {
+                    selectedVariant = variant;
+                } else if (selectedResolution === '1080p' && variant.width === 1920 && variant.height === 1080) {
+                    selectedVariant = variant;
+                } else if (selectedResolution === '4k' && variant.width >= 3840) {
+                    selectedVariant = variant;
+                }
+            });
+
+            if (selectedVariant) {
+                console.log(`Switching to resolution: ${selectedVariant.width}x${selectedVariant.height}`);
+                player.selectVariant(selectedVariant); // Switch to the selected variant
+            } else {
+                console.log(`Resolution ${selectedResolution} not found in available variants.`);
             }
         }
     </script>
