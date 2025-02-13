@@ -70,18 +70,16 @@
                     }
                 },
                 streaming: {
-                    startAtSegmentBoundary: true,  // Ensure playback starts at a valid segment
-                    inaccurateManifestTolerance: 2, // Handle incorrect timestamps
                     bufferingGoal: 30, // Buffer goal in seconds
                     retryParameters: {
                         maxAttempts: 5, // Retry on failure
                     },
-                },
-                manifest: {
-                    dash: {
-                        ignoreMinBufferTime: true // Ignore incorrect buffer times
-                    }
                 }
+            });
+
+            // Ensure video always starts at 0
+            player.addEventListener('loadedmetadata', () => {
+                videoElement.currentTime = 0;
             });
 
             if (shaka.Player.isBrowserSupported()) {
