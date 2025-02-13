@@ -38,12 +38,16 @@
     <script>
         let player = null; // Global player variable
 
-        // Show cookie banner if the user hasn't accepted cookies
-        if (!getCookie('cookie_consent')) {
-            document.getElementById('cookie-banner').style.display = 'block';
-        }
-
+        // Automatically accept cookies and hide the banner
         document.addEventListener("DOMContentLoaded", function () {
+            // Automatically set cookie consent and hide banner
+            if (!getCookie('cookie_consent')) {
+                setCookie('cookie_consent', 'true', 365);  // Automatically accept cookies
+            }
+
+            // Hide the cookie consent banner immediately
+            document.getElementById('cookie-banner').style.display = 'none';
+
             const tiles = document.querySelectorAll('.tile');
 
             tiles.forEach(function (tile) {
@@ -52,12 +56,6 @@
                     const key = tile.getAttribute('data-key');
                     loadVideo(videoSource, key);
                 });
-            });
-
-            // Handle cookie consent
-            document.getElementById('accept-cookies').addEventListener('click', function() {
-                setCookie('cookie_consent', 'true', 365);  // Set a first-party cookie
-                document.getElementById('cookie-banner').style.display = 'none';
             });
         });
 
