@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TEST IPTV WEB</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.5.0/shaka-player.compiled.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.13.2/dist/shaka-player.compiled.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,31 +17,29 @@
 
     <!-- Channel Selector -->
     <div id="channel-selector">
-        <div class="tile" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
+        <div class="tile" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" 
+            data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
             <img src="https://i.imgur.com/lyjZUke.png" alt="TV 5 HD">
             <span>TV 5 HD</span>
         </div>
-        <div class="tile" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
+        <div class="tile" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" 
+            data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
             <img src="https://i.imgur.com/LvswLsB.png" alt="ONE SPORTS">
             <span>ONE SPORTS</span>
         </div>
     </div>
 
     <script>
-        let isLoading = false;
-        let player = null; // Player variable
+        let player = null; // Global player variable
 
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const tiles = document.querySelectorAll('.tile');
 
-            tiles.forEach(function(tile) {
-                tile.addEventListener('click', function() {
-                    if (!isLoading) {
-                        isLoading = true;
-                        const videoSource = tile.getAttribute('data-source');
-                        const key = tile.getAttribute('data-key');
-                        loadVideo(videoSource, key);
-                    }
+            tiles.forEach(function (tile) {
+                tile.addEventListener('click', function () {
+                    const videoSource = tile.getAttribute('data-source');
+                    const key = tile.getAttribute('data-key');
+                    loadVideo(videoSource, key);
                 });
             });
         });
@@ -49,6 +47,20 @@
         function loadVideo(sourceUrl, key) {
             const videoElement = document.getElementById('video-player');
 
+            // Destroy existing player before creating a new one
+            if (player) {
+                player.destroy().then(() => {
+                    console.log("Previous player destroyed. Loading new channel...");
+                    initializePlayer(videoElement, sourceUrl, key);
+                }).catch((error) => {
+                    console.error("Error destroying previous player: ", error);
+                });
+            } else {
+                initializePlayer(videoElement, sourceUrl, key);
+            }
+        }
+
+        function initializePlayer(videoElement, sourceUrl, key) {
             player = new shaka.Player(videoElement);
 
             player.configure({
@@ -58,9 +70,9 @@
                     }
                 },
                 streaming: {
-                    bufferingGoal: 30,  // Buffer goal in seconds
+                    bufferingGoal: 30, // Buffer goal in seconds
                     retryParameters: {
-                        maxAttempts: 5,  // Retry on failure
+                        maxAttempts: 5, // Retry on failure
                     },
                 },
                 manifest: {
@@ -71,16 +83,13 @@
             });
 
             if (shaka.Player.isBrowserSupported()) {
-                player.load(sourceUrl).then(function() {
+                player.load(sourceUrl).then(() => {
                     console.log('The video has been loaded successfully!');
-                    isLoading = false;
-                }).catch(function(error) {
+                }).catch((error) => {
                     console.error('Error loading the video: ', error);
-                    isLoading = false;
                 });
             } else {
                 console.error('Shaka Player is not supported on this browser.');
-                isLoading = false;
             }
         }
     </script>
