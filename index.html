@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TEST IPTV WEB</title>
-    
+
     <!-- Core Shaka Player -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.compiled.js"></script>
 
@@ -16,7 +16,7 @@
 <body>
     <h1><i>TEST IPTV WEB</i></h1>
 
-    <!-- Video Container -->
+    <!-- Video Container (Shaka UI will manage this) -->
     <div id="video-container">
         <video id="video-player" autoplay class="shaka-video" style="display: none;" controls></video>
     </div>
@@ -74,7 +74,7 @@
         }
 
         function initializePlayer(videoElement, sourceUrl, key) {
-            // Create the player without passing the video element
+            // Create the player without passing the video element (this is hidden)
             player = new shaka.Player(videoElement);
 
             // Configure DRM (Clear Key)
@@ -95,7 +95,7 @@
                 }
             });
 
-            // Attach the player to the video element
+            // Attach the player to the video element (which is hidden)
             player.attach(videoElement);
 
             // Initialize Shaka UI (Overlay)
@@ -109,6 +109,7 @@
                 console.error("Shaka UI failed to load.");
             }
 
+            // Check if the browser supports Shaka Player
             if (shaka.Player.isBrowserSupported()) {
                 player.load(sourceUrl).then(() => {
                     console.log('The video has been loaded successfully!');
