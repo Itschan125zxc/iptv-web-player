@@ -188,6 +188,14 @@ function initializePlayer(videoElement, sourceUrl, key) {
 
     // Define the UI configuration to remove all default controls
     const uiConfig = {
+    controlPanelElements: [
+        'quality',      // Quality (Resolution) selector
+        'volume',       // Volume control
+        'fullscreen',   // Fullscreen toggle button
+        'seekBar',      // Seek bar for video progress
+        'mute',         // Mute button
+    ],
+};
         disableTextTrackSettings: true, // Disable text track settings
     };
 
