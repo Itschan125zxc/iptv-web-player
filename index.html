@@ -3,19 +3,17 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEST IPTV WEB</title>
+    <title>IPTV Player</title>
 
-    <!-- Shaka Player & UI -->
+    <!-- Shaka Player -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.min.css">
 
-    <!-- Custom Styles -->
-    <link rel="stylesheet" href="style.css">
-
     <style>
+        /* General Styles */
         body {
             font-family: Arial, sans-serif;
-            background-color: #1e1e1e;
+            background-color: #121212;
             color: white;
             text-align: center;
             margin: 0;
@@ -30,17 +28,23 @@
         /* Video Player Container */
         #video-container {
             position: relative;
-            width: 80%;
+            width: 90%;
             max-width: 900px;
-            height: auto;
             margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
         }
 
         .shaka-overlay {
-            position: relative;
             width: 100%;
             height: auto;
             background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
             border-radius: 10px;
         }
 
@@ -50,7 +54,9 @@
             justify-content: center;
             flex-wrap: wrap;
             gap: 15px;
-            margin-top: 20px;
+            margin: 20px auto;
+            padding: 10px;
+            max-width: 900px;
         }
 
         .tile {
@@ -61,10 +67,11 @@
             cursor: pointer;
             border: 2px solid #444;
             border-radius: 10px;
-            transition: transform 0.2s;
-            background-color: #292929;
+            transition: transform 0.2s, background 0.3s;
+            background-color: #1e1e1e;
             color: white;
             width: 120px;
+            text-align: center;
         }
 
         .tile:hover {
@@ -78,33 +85,46 @@
             border-radius: 5px;
         }
 
-        /* Cookie Consent */
-        #cookie-banner {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: #333;
-            color: white;
-            padding: 15px;
-            text-align: center;
+        /* Mobile Responsiveness */
+        @media screen and (max-width: 600px) {
+            #channel-selector {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding: 10px;
+            }
+
+            .tile {
+                width: 100px;
+            }
+
+            video {
+                border-radius: 5px;
+            }
         }
 
-        #accept-cookies {
-            background-color: #4CAF50;
-            color: white;
+        /* Loading Indicator */
+        #loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            background: rgba(0, 0, 0, 0.7);
             padding: 10px 20px;
-            border: none;
-            cursor: pointer;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Video Container with Shaka UI -->
+    <h1>Live IPTV Streaming</h1>
+
+    <!-- Video Container -->
     <div id="video-container">
         <div id="video-overlay" class="shaka-overlay">
             <video id="video-player" class="shaka-video" autoplay></video>
+            <div id="loading">Loading...</div>
         </div>
     </div>
 
@@ -122,108 +142,65 @@
         </div>
     </div>
 
-    <!-- Cookie Consent Banner -->
-    <div id="cookie-banner">
-        <p>We use cookies to enhance your experience. By continuing to visit this site, you agree to our use of cookies.</p>
-        <button id="accept-cookies">Accept</button>
-    </div>
-
     <script>
         let player = null;
 
-        // When the DOM is loaded, set up the click event for channel selection
         document.addEventListener("DOMContentLoaded", function () {
             const tiles = document.querySelectorAll('.tile');
+            const loading = document.getElementById('loading');
 
-            // When a channel is selected
             tiles.forEach(tile => {
                 tile.addEventListener('click', function () {
                     const videoSource = tile.getAttribute('data-source');
                     const key = tile.getAttribute('data-key');
+                    loading.style.display = "block";
                     loadVideo(videoSource, key);
                 });
             });
+        });
 
-            // Cookie Consent Handling
-            const banner = document.getElementById("cookie-banner");
-            const acceptBtn = document.getElementById("accept-cookies");
+        function initializePlayer(videoElement, sourceUrl, key) {
+            const videoContainer = document.getElementById('video-overlay');
 
-            if (!localStorage.getItem("cookiesAccepted")) {
-                banner.style.display = "block";
+            if (videoContainer['ui']) {
+                videoContainer['ui'].destroy();
             }
 
-            acceptBtn.addEventListener("click", function () {
-                localStorage.setItem("cookiesAccepted", "true");
-                banner.style.display = "none";
+            const shakaPlayer = new shaka.Player(videoElement);
+            player = shakaPlayer;
+
+            const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
+            ui.configure({
+                'controls': false,
+                'seekBar': false,
+                'volumeBar': false,
+                'fullscreenButton': false,
+                'muteButton': false,
             });
-        });
 
-        // Load the selected video
-        function loadVideo(sourceUrl, key) {
-    const videoElement = document.getElementById('video-player');
-    
-    // Destroy the existing player before creating a new one
-    if (player) {
-        player.destroy().then(() => {
-            console.log("Previous player destroyed. Loading new channel...");
-            initializePlayer(videoElement, sourceUrl, key); // Reinitialize player with updated UI config
-        }).catch((error) => {
-            console.error("Error destroying previous player: ", error);
-        });
-    } else {
-        initializePlayer(videoElement, sourceUrl, key);
-    }
-}
+            player.configure({
+                drm: {
+                    clearKeys: {
+                        [key.split(":")[0]]: key.split(":")[1]
+                    }
+                },
+                streaming: {
+                    bufferingGoal: 30,
+                    retryParameters: { maxAttempts: 5 }
+                }
+            });
 
-function initializePlayer(videoElement, sourceUrl, key) {
-    const videoContainer = document.getElementById('video-overlay');
-
-    // Destroy existing UI if it exists
-    if (videoContainer['ui']) {
-        videoContainer['ui'].destroy();
-    }
-
-    // Initialize Shaka Player instance
-    const shakaPlayer = new shaka.Player(videoElement);
-    player = shakaPlayer; // Store reference to the player
-
-    // Initialize Shaka UI Overlay
-    const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
-    videoContainer['ui'] = ui; // Store UI reference for future cleanup
-
-    // Configure player with DRM (if needed)
-    player.configure({
-        drm: {
-            clearKeys: {
-                [key.split(":")[0]]: key.split(":")[1]
+            if (shaka.Player.isBrowserSupported()) {
+                player.load(sourceUrl).then(() => {
+                    document.getElementById('loading').style.display = "none";
+                }).catch(error => {
+                    console.error('Error loading video:', error);
+                    document.getElementById('loading').style.display = "none";
+                });
+            } else {
+                console.error('Shaka Player is not supported in this browser.');
             }
-        },
-        streaming: {
-            bufferingGoal: 30,
-            retryParameters: { maxAttempts: 5 }
         }
-    });
-
-    // Apply UI settings after player initialization
-    ui.configure({
-        'controls': false,
-        'seekBar': false,
-        'volumeBar': false,
-        'fullscreenButton': false,
-        'muteButton': false,
-    });
-
-    // Check if Shaka Player is supported in the browser
-    if (shaka.Player.isBrowserSupported()) {
-        player.load(sourceUrl).then(() => {
-            console.log('Video loaded successfully!');
-        }).catch(error => {
-            console.error('Error loading video:', error);
-        });
-    } else {
-        console.error('Shaka Player is not supported in this browser.');
-    }
-}
     </script>
 </body>
 </html>
