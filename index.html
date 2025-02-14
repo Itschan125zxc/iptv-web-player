@@ -164,38 +164,20 @@
             });
         });
 
-        function loadVideo(sourceUrl, key) {
-    const videoElement = document.getElementById('video-player');
-    
-    // Destroy the existing player before creating a new one
-    if (player) {
-        player.destroy().then(() => {
-            console.log("Previous player destroyed. Loading new channel...");
-            initializePlayer(videoElement, sourceUrl, key); // Reinitialize player with updated UI config
-        }).catch((error) => {
-            console.error("Error destroying previous player: ", error);
-        });
-    } else {
-        initializePlayer(videoElement, sourceUrl, key);
-    }
-}
-
-function initializePlayer(videoElement, sourceUrl, key) {
+        function initializePlayer(videoElement, sourceUrl, key) {
     const videoContainer = document.getElementById('video-overlay');
 
     // Initialize Shaka Player instance
     const shakaPlayer = new shaka.Player(videoElement);
 
-    // Define the UI configuration to remove all default controls
+    // Define the UI configuration to show quality (resolution), volume, and fullscreen controls, without the seek bar
     const uiConfig = {
-    controlPanelElements: [
-        'quality',      // Quality (Resolution) selector
-        'volume',       // Volume control
-        'fullscreen',   // Fullscreen toggle button
-        'mute',         // Mute button
-    ],
-};
-        disableTextTrackSettings: true, // Disable text track settings
+        controlPanelElements: [
+            'quality',      // Quality (Resolution) selector
+            'volume',       // Volume control
+            'fullscreen',   // Fullscreen toggle button
+        ],
+        disableTextTrackSettings: true, // Disable text track settings (optional)
     };
 
     // Initialize Shaka UI Overlay
@@ -233,8 +215,7 @@ function initializePlayer(videoElement, sourceUrl, key) {
 
     // The video player will be visible, but Shaka Player's default controls are hidden
     videoElement.style.visibility = 'visible';  // Ensure the video element is visible
-}
-
+        }
     </script>
 
 </body>
