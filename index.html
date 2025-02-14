@@ -171,6 +171,9 @@
         // Load the selected video
         function loadVideo(sourceUrl, key) {
             const videoElement = document.getElementById('video-player');
+                initializePlayer(videoElement, sourceUrl, key);
+            }
+        }
 
         // Initialize Shaka Player and UI Overlay
         function initializePlayer(videoElement, sourceUrl, key) {
