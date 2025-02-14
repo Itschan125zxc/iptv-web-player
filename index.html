@@ -43,17 +43,6 @@
             border-radius: 10px;
         }
 
-        .shaka-ui {
-           visibility: hidden !important;
-           opacity: 0 !important;
-           pointer-events: none !important;  /* Ensures no interaction with hidden controls */
-       }
-
-        .shaka-video {
-            width: 100%;
-            height: auto;
-        }
-
         /* Channel Selector */
         #channel-selector {
             display: flex;
@@ -107,6 +96,13 @@
             border: none;
             cursor: pointer;
         }
+
+        /* Hide Shaka Controls */
+        .shaka-ui {
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;  /* Ensures no interaction with hidden controls */
+        }
     </style>
 </head>
 <body>
@@ -114,7 +110,7 @@
     <!-- Video Container with Shaka UI -->
     <div id="video-container">
         <div id="video-overlay" class="shaka-overlay">
-            <video id="video-player" class="shaka-video" autoplay controls></video>
+            <video id="video-player" class="shaka-video" autoplay></video>
         </div>
     </div>
 
@@ -195,11 +191,6 @@
             const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
             player = shakaPlayer;  // Store reference to the player
 
-            ui.configure({
-            'controls': false, // This removes the UI controls from the player
-            'overlay': true     // You can also control overlay behavior, e.g., custom buttons
-        });
-
             // Configure player with DRM (if needed)
             player.configure({
                 drm: {
@@ -210,7 +201,20 @@
                 streaming: {
                     bufferingGoal: 30,
                     retryParameters: { maxAttempts: 5 }
-                }
+                },
+                'ui': {
+                    'enabled': true, // Enable UI Overlay
+                },
+                'controls': false, // Disable the default controls
+            });
+
+            // Remove UI elements like play/pause, volume, etc.
+            ui.configure({
+                'controls': false, // Disable default controls in overlay
+                'seekBar': false,  // Optional: If you want to hide the seek bar too
+                'volumeBar': false, // Optional: If you want to hide the volume bar
+                'fullscreenButton': false, // Optional: Hide fullscreen button
+                'muteButton': false, // Optional: Hide mute button
             });
 
             // Check if Shaka Player is supported in the browser
