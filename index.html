@@ -171,8 +171,18 @@
         // Load the selected video
         function loadVideo(sourceUrl, key) {
             const videoElement = document.getElementById('video-player');
-                initializePlayer(videoElement, sourceUrl, key);
-        }
+                // Destroy the existing player before creating a new one
+    if (player) {
+        player.destroy().then(() => {
+            console.log("Previous player destroyed. Loading new channel...");
+            initializePlayer(videoElement, sourceUrl, key);
+        }).catch((error) => {
+            console.error("Error destroying previous player: ", error);
+        });
+    } else {
+        initializePlayer(videoElement, sourceUrl, key);
+    }
+}
 
         // Initialize Shaka Player and UI Overlay
         function initializePlayer(videoElement, sourceUrl, key) {
