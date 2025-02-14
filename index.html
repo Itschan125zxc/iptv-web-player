@@ -43,9 +43,11 @@
             border-radius: 10px;
         }
 
-        .shaka-controls-container * {
-            display: none !important;
-        }
+        .shaka-ui {
+           visibility: hidden !important;
+           opacity: 0 !important;
+           pointer-events: none !important;  /* Ensures no interaction with hidden controls */
+       }
 
         .shaka-video {
             width: 100%;
