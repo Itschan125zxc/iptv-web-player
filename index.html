@@ -195,6 +195,11 @@
             const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
             player = shakaPlayer;  // Store reference to the player
 
+            ui.configure({
+            'controls': false, // This removes the UI controls from the player
+            'overlay': true     // You can also control overlay behavior, e.g., custom buttons
+        });
+
             // Configure player with DRM (if needed)
             player.configure({
                 drm: {
