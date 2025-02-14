@@ -73,10 +73,14 @@ body {
     opacity: 1 !important; /* Video remains visible */
 }
 
-/* Ensure the Shaka UI overlay (the controls container) remains visible */
-.shaka-ui-container {
+.shaka-controls-container * {
+    color: transparent !important;
+    text-shadow: none !important;
+}
+
+/* Keep the overlay text visible */
+.shaka-overlay {
     visibility: visible !important;
-    opacity: 1 !important;
 }
 
 /* Ensure the overlay container does not interfere with UI */
