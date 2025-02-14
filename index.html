@@ -193,10 +193,7 @@ function initializePlayer(videoElement, sourceUrl, key) {
     const ui = new shaka.ui.Overlay(new shaka.Player(videoElement), videoContainer, videoElement);
     player = ui.getControls().getPlayer(); // Get Shaka Player instance
 
-    // Ensure only the controls are hidden, not the video
-    setTimeout(() => {
-        document.querySelector('.shaka-controls-container').style.display = 'none';
-    }, 500);
+    ui.getControls().setVisible(false);
 
     player.configure({
         drm: {
