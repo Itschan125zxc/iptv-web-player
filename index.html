@@ -180,12 +180,6 @@ function initializePlayer(videoElement, sourceUrl, key) {
     // Initialize Shaka Player instance
     const shakaPlayer = new shaka.Player(videoElement);
 
-    // Define the UI configuration to remove all default controls
-    const uiConfig = {
-      controlPanelElements: ['play_pause', 'mute', 'volume', 'quality', 'fullscreen'], // Specify which controls you want to keep
-      disableTextTrackSettings: true, // Optional: Disable text track settings
-    };
-
     // Initialize Shaka UI Overlay
     const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
     player = shakaPlayer;  // Store reference to the player
@@ -201,11 +195,20 @@ function initializePlayer(videoElement, sourceUrl, key) {
             bufferingGoal: 30,
             retryParameters: { maxAttempts: 5 }
         },
-        'controls': false, // Disable default controls of Shaka Player
+        'ui': {
+            'enabled': true, // Enable UI Overlay
+        },
+        'controls': false, // Disable the default controls
     });
 
-    // Apply the UI configuration settings after player initialization
-    ui.configure(uiConfig); // Apply the uiConfig
+    // Apply UI settings after player initialization
+    ui.configure({
+        'controls': false, // Disable default controls in overlay
+        'seekBar': false,  // Optional: If you want to hide the seek bar too
+        'volumeBar': false, // Optional: If you want to hide the volume bar
+        'fullscreenButton': false, // Optional: Hide fullscreen button
+        'muteButton': false, // Optional: Hide mute button
+    });
 
     // Check if Shaka Player is supported in the browser
     if (shaka.Player.isBrowserSupported()) {
@@ -218,9 +221,6 @@ function initializePlayer(videoElement, sourceUrl, key) {
     } else {
         console.error('Shaka Player is not supported in this browser.');
     }
-
-    // The video player will be visible, but Shaka Player's default controls are hidden
-    videoElement.style.visibility = 'visible';  // Ensure the video element is visible
 }
 
     </script>
