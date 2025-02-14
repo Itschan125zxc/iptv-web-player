@@ -184,18 +184,15 @@
 }
 
 function initializePlayer(videoElement, sourceUrl, key) {
-    const videoContainer = document.getElementById('video-overlay');
-
-    // Destroy previous UI overlay before creating a new one
-    document.querySelectorAll('.shaka-ui').forEach(el => el.remove());
+    const videoContainer = document.getElementById('video-overlay')
 
     // Initialize Shaka UI Overlay
     const ui = new shaka.ui.Overlay(new shaka.Player(videoElement), videoContainer, videoElement);
     player = ui.getControls().getPlayer(); // Get Shaka Player instance
 
-    // Hide UI explicitly
+    // Ensure only the controls are hidden, not the video
     setTimeout(() => {
-        document.querySelector('.shaka-ui').style.display = 'none';
+        document.querySelector('.shaka-controls-container').style.display = 'none';
     }, 500);
 
     player.configure({
