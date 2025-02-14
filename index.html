@@ -186,9 +186,17 @@
 function initializePlayer(videoElement, sourceUrl, key) {
     const videoContainer = document.getElementById('video-overlay');
 
+    // Destroy previous UI overlay before creating a new one
+    document.querySelectorAll('.shaka-ui').forEach(el => el.remove());
+
     // Initialize Shaka UI Overlay
     const ui = new shaka.ui.Overlay(new shaka.Player(videoElement), videoContainer, videoElement);
     player = ui.getControls().getPlayer(); // Get Shaka Player instance
+
+    // Hide UI explicitly
+    setTimeout(() => {
+        document.querySelector('.shaka-ui').style.display = 'none';
+    }, 500);
 
     player.configure({
         drm: {
@@ -211,6 +219,7 @@ function initializePlayer(videoElement, sourceUrl, key) {
         console.error('Shaka Player is not supported in this browser.');
     }
 }
+
 
     </script>
 </body>
