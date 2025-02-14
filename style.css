@@ -72,17 +72,6 @@ body {
     visibility: visible !important;
     opacity: 1 !important; /* Video remains visible */
 }
-
-.shaka-controls-container * {
-    color: transparent !important;
-    text-shadow: none !important;
-}
-
-/* Keep the overlay text visible */
-.shaka-overlay {
-    visibility: visible !important;
-}
-
 /* Ensure the overlay container does not interfere with UI */
 .shaka-ui-overlay {
     visibility: visible !important;  /* Keep the overlay visible */
