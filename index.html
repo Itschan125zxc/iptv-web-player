@@ -187,12 +187,14 @@
             // Initialize Shaka Player instance
             const shakaPlayer = new shaka.Player(videoElement);
 
+            const uiConfig = {
+      controlPanelElements: [], // Empty array to remove all controls
+      disableTextTrackSettings: true, // Optional: Disable text track settings
+    };
+
             // Initialize Shaka UI Overlay
             const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
             player = shakaPlayer;  // Store reference to the player
-
-            // Disable debug output
-            shaka.debug.enable(false); // This will disable debug output and frame number information
 
             // Configure player with DRM (if needed)
             player.configure({
