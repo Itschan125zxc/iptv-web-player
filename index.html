@@ -182,8 +182,8 @@ function initializePlayer(videoElement, sourceUrl, key) {
 
     // Define the UI configuration to remove all default controls
     const uiConfig = {
-        controlPanelElements: [], // Empty array to remove all controls
-        disableTextTrackSettings: true, // Disable text track settings
+      controlPanelElements: ['play_pause', 'mute', 'volume', 'quality', 'fullscreen'], // Specify which controls you want to keep
+      disableTextTrackSettings: true, // Optional: Disable text track settings
     };
 
     // Initialize Shaka UI Overlay
