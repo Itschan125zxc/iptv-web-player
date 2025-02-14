@@ -159,74 +159,70 @@
 
         // Load the selected video
         function loadVideo(sourceUrl, key) {
-            const videoElement = document.getElementById('video-player');
-            // Destroy the existing player before creating a new one
-            if (player) {
-                player.destroy().then(() => {
-                    console.log("Previous player destroyed. Loading new channel...");
-                    initializePlayer(videoElement, sourceUrl, key);
-                }).catch((error) => {
-                    console.error("Error destroying previous player: ", error);
-                });
-            } else {
-                initializePlayer(videoElement, sourceUrl, key);
+    const videoElement = document.getElementById('video-player');
+    
+    // Destroy the existing player before creating a new one
+    if (player) {
+        player.destroy().then(() => {
+            console.log("Previous player destroyed. Loading new channel...");
+            initializePlayer(videoElement, sourceUrl, key); // Reinitialize player with updated UI config
+        }).catch((error) => {
+            console.error("Error destroying previous player: ", error);
+        });
+    } else {
+        initializePlayer(videoElement, sourceUrl, key);
+    }
+}
+
+function initializePlayer(videoElement, sourceUrl, key) {
+    const videoContainer = document.getElementById('video-overlay');
+
+    // Initialize Shaka Player instance
+    const shakaPlayer = new shaka.Player(videoElement);
+
+    // Define the UI configuration to remove all default controls
+    const uiConfig = {
+        controlPanelElements: [], // Empty array to remove all controls
+        disableTextTrackSettings: true, // Disable text track settings
+    };
+
+    // Initialize Shaka UI Overlay
+    const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
+    player = shakaPlayer;  // Store reference to the player
+
+    // Configure player with DRM (if needed)
+    player.configure({
+        drm: {
+            clearKeys: {
+                [key.split(":")[0]]: key.split(":")[1]
             }
-        }
+        },
+        streaming: {
+            bufferingGoal: 30,
+            retryParameters: { maxAttempts: 5 }
+        },
+        'controls': false, // Disable default controls of Shaka Player
+    });
 
-        // Initialize Shaka Player and UI Overlay
-        function initializePlayer(videoElement, sourceUrl, key) {
-            const videoContainer = document.getElementById('video-overlay');
+    // Apply the UI configuration settings after player initialization
+    ui.configure(uiConfig); // Apply the uiConfig
 
-            // Initialize Shaka Player instance
-            const shakaPlayer = new shaka.Player(videoElement);
+    // Check if Shaka Player is supported in the browser
+    if (shaka.Player.isBrowserSupported()) {
+        // Load the video source
+        player.load(sourceUrl).then(() => {
+            console.log('Video loaded successfully!');
+        }).catch(error => {
+            console.error('Error loading video:', error);
+        });
+    } else {
+        console.error('Shaka Player is not supported in this browser.');
+    }
 
-            // Define the UI configuration to show quality, volume, and fullscreen controls, without the seek bar
-            const uiConfig = {
-                controlPanelElements: [
-                    'quality',      // Quality (Resolution) selector
-                    'volume',       // Volume control
-                    'fullscreen',   // Fullscreen toggle button
-                ],
-                disableTextTrackSettings: true, // Disable text track settings (optional)
-            };
+    // The video player will be visible, but Shaka Player's default controls are hidden
+    videoElement.style.visibility = 'visible';  // Ensure the video element is visible
+}
 
-            // Initialize Shaka UI Overlay
-            const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
-            player = shakaPlayer;  // Store reference to the player
-
-            // Configure player with DRM (if needed)
-            player.configure({
-                drm: {
-                    clearKeys: {
-                        [key.split(":")[0]]: key.split(":")[1]
-                    }
-                },
-                streaming: {
-                    bufferingGoal: 30,
-                    retryParameters: { maxAttempts: 5 }
-                },
-                'controls': false, // Disable default controls of Shaka Player
-            });
-
-            // Apply the UI configuration settings after player initialization
-            ui.configure(uiConfig); // Apply the uiConfig
-
-            // Check if Shaka Player is supported in the browser
-            if (shaka.Player.isBrowserSupported()) {
-                // Load the video source
-                player.load(sourceUrl).then(() => {
-                    console.log('Video loaded successfully!');
-                }).catch(error => {
-                    console.error('Error loading video:', error);
-                });
-            } else {
-                console.error('Shaka Player is not supported in this browser.');
-            }
-
-            // The video player will be visible, but Shaka Player's default controls are hidden
-            videoElement.style.visibility = 'visible';  // Ensure the video element is visible
-        }
     </script>
-
 </body>
 </html>
