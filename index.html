@@ -177,12 +177,18 @@
 function initializePlayer(videoElement, sourceUrl, key) {
     const videoContainer = document.getElementById('video-overlay');
 
+    // Destroy existing UI if it exists
+    if (videoContainer['ui']) {
+        videoContainer['ui'].destroy();
+    }
+
     // Initialize Shaka Player instance
     const shakaPlayer = new shaka.Player(videoElement);
+    player = shakaPlayer; // Store reference to the player
 
     // Initialize Shaka UI Overlay
     const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
-    player = shakaPlayer;  // Store reference to the player
+    videoContainer['ui'] = ui; // Store UI reference for future cleanup
 
     // Configure player with DRM (if needed)
     player.configure({
@@ -194,25 +200,20 @@ function initializePlayer(videoElement, sourceUrl, key) {
         streaming: {
             bufferingGoal: 30,
             retryParameters: { maxAttempts: 5 }
-        },
-        'ui': {
-            'enabled': true, // Enable UI Overlay
-        },
-        'controls': false, // Disable the default controls
+        }
     });
 
     // Apply UI settings after player initialization
     ui.configure({
-        'controls': false, // Disable default controls in overlay
-        'seekBar': false,  // Optional: If you want to hide the seek bar too
-        'volumeBar': false, // Optional: If you want to hide the volume bar
-        'fullscreenButton': false, // Optional: Hide fullscreen button
-        'muteButton': false, // Optional: Hide mute button
+        'controls': false,
+        'seekBar': false,
+        'volumeBar': false,
+        'fullscreenButton': false,
+        'muteButton': false,
     });
 
     // Check if Shaka Player is supported in the browser
     if (shaka.Player.isBrowserSupported()) {
-        // Load the video source
         player.load(sourceUrl).then(() => {
             console.log('Video loaded successfully!');
         }).catch(error => {
@@ -222,7 +223,6 @@ function initializePlayer(videoElement, sourceUrl, key) {
         console.error('Shaka Player is not supported in this browser.');
     }
 }
-
     </script>
 </body>
 </html>
