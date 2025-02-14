@@ -166,7 +166,7 @@
 
         function loadVideo(sourceUrl, key) {
     const videoElement = document.getElementById('video-player');
-
+    
     // Destroy the existing player before creating a new one
     if (player) {
         player.destroy().then(() => {
@@ -186,7 +186,7 @@ function initializePlayer(videoElement, sourceUrl, key) {
     // Initialize Shaka Player instance
     const shakaPlayer = new shaka.Player(videoElement);
 
-    // Define the UI configuration to remove controls
+    // Define the UI configuration to remove all default controls
     const uiConfig = {
         controlPanelElements: [], // Empty array to remove all controls
         disableTextTrackSettings: true, // Disable text track settings
@@ -207,10 +207,7 @@ function initializePlayer(videoElement, sourceUrl, key) {
             bufferingGoal: 30,
             retryParameters: { maxAttempts: 5 }
         },
-        'ui': {
-            'enabled': true, // Enable UI Overlay
-        },
-        'controls': false, // Disable the default controls
+        'controls': false, // Disable default controls of Shaka Player
     });
 
     // Apply the UI configuration settings after player initialization
@@ -227,7 +224,11 @@ function initializePlayer(videoElement, sourceUrl, key) {
     } else {
         console.error('Shaka Player is not supported in this browser.');
     }
+
+    // The video player will be visible, but Shaka Player's default controls are hidden
+    videoElement.style.visibility = 'visible';  // Ensure the video element is visible
 }
+
     </script>
 
 </body>
