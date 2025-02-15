@@ -614,6 +614,13 @@ function initializePlayer(videoElement, sourceUrl, key) {
         console.error('Shaka Player is not supported in this browser.');
     }
 }
+        const proxy = "https://your-cloudflare-worker-url.com/?url=";
+        const target = "https://ni.bobay.workers.dev/1216/manifest.mpd";
+
+        fetch(proxy + encodeURIComponent(target))
+            .then(response => response.text())
+            .then(data => console.log(data))
+            .catch(error => console.error(error));
     </script>
 </body>
 </html>
