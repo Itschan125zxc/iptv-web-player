@@ -140,6 +140,14 @@
                     loadVideo(videoSource, key);
                 });
             });
+
+            // Auto play first channel
+            if (channels.length > 0) {
+                const firstChannel = channels[0];
+                const firstVideoSource = firstChannel.getAttribute("data-source");
+                const firstKey = firstChannel.getAttribute("data-key");
+                loadVideo(firstVideoSource, firstKey);
+            }
         });
 
         function loadVideo(sourceUrl, key) {
