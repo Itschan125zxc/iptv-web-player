@@ -46,7 +46,7 @@
         }
 
         /* Channel List */
-        #channel-list {
+        #channel-list-container {
             width: 250px;
             height: 100vh;
             overflow-y: auto;
@@ -56,6 +56,16 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+        }
+
+        #search-box {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #282828;
+            color: white;
         }
 
         .channel-item {
@@ -93,17 +103,20 @@
         </div>
     </div>
 
-    <!-- Channel List -->
-    <div id="channel-list">
-        <div class="channel-item" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" 
-            data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
-            <img src="https://i.imgur.com/lyjZUke.png" alt="TV 5 HD">
-            <span class="channel-name">TV 5 HD</span>
-        </div>
-        <div class="channel-item" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" 
-            data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
-            <img src="https://i.imgur.com/LvswLsB.png" alt="ONE SPORTS">
-            <span class="channel-name">ONE SPORTS</span>
+    <!-- Channel List Container -->
+    <div id="channel-list-container">
+        <input type="text" id="search-box" placeholder="Search Channels...">
+        <div id="channel-list">
+            <div class="channel-item" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" 
+                data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
+                <img src="https://i.imgur.com/lyjZUke.png" alt="TV 5 HD">
+                <span class="channel-name">TV 5 HD</span>
+            </div>
+            <div class="channel-item" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" 
+                data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
+                <img src="https://i.imgur.com/LvswLsB.png" alt="ONE SPORTS">
+                <span class="channel-name">ONE SPORTS</span>
+            </div>
         </div>
     </div>
 
@@ -112,12 +125,25 @@
 
         document.addEventListener("DOMContentLoaded", function () {
             const channels = document.querySelectorAll('.channel-item');
+            const searchBox = document.getElementById("search-box");
             
             channels.forEach(channel => {
                 channel.addEventListener('click', function () {
                     const videoSource = channel.getAttribute('data-source');
                     const key = channel.getAttribute('data-key');
                     loadVideo(videoSource, key);
+                });
+            });
+
+            searchBox.addEventListener("input", function () {
+                const filter = searchBox.value.toLowerCase();
+                channels.forEach(channel => {
+                    const name = channel.querySelector(".channel-name").textContent.toLowerCase();
+                    if (name.includes(filter)) {
+                        channel.style.display = "flex";
+                    } else {
+                        channel.style.display = "none";
+                    }
                 });
             });
         });
@@ -133,50 +159,6 @@
                 });
             } else {
                 initializePlayer(videoElement, sourceUrl, key);
-            }
-        }
-
-        function initializePlayer(videoElement, sourceUrl, key) {
-            const videoContainer = document.getElementById('video-overlay');
-
-            if (videoContainer['ui']) {
-                videoContainer['ui'].destroy();
-            }
-
-            const shakaPlayer = new shaka.Player(videoElement);
-            player = shakaPlayer;
-
-            const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
-            videoContainer['ui'] = ui;
-
-            player.configure({
-                drm: {
-                    clearKeys: {
-                        [key.split(":")[0]]: key.split(":")[1]
-                    }
-                },
-                streaming: {
-                    bufferingGoal: 30,
-                    retryParameters: { maxAttempts: 5 }
-                }
-            });
-
-            ui.configure({
-                'controls': false,
-                'seekBar': false,
-                'volumeBar': false,
-                'fullscreenButton': false,
-                'muteButton': false,
-            });
-
-            if (shaka.Player.isBrowserSupported()) {
-                player.load(sourceUrl).then(() => {
-                    console.log('Video loaded successfully!');
-                }).catch(error => {
-                    console.error('Error loading video:', error);
-                });
-            } else {
-                console.error('Shaka Player is not supported in this browser.');
             }
         }
     </script>
