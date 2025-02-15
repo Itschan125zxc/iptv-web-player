@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IPTV Player</title>
 
-    <!-- Shaka Player -->
+    <!-- Shaka Player for DASH support with UI controls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.min.css">
+    
+    <!-- HLS.js for HLS (.m3u8) support -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
     <style>
         body {
@@ -56,16 +59,6 @@
             gap: 10px;
         }
 
-        #search-box {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border: 1px solid #444;
-            background-color: #282828;
-            color: white;
-        }
-
         .channel-item {
             display: flex;
             align-items: center;
@@ -86,10 +79,6 @@
             border-radius: 5px;
             margin-right: 10px;
         }
-
-        .channel-name {
-            font-size: 14px;
-        }
     </style>
 </head>
 <body>
@@ -103,15 +92,13 @@
     <div id="channel-list-container">
         <input type="text" id="search-box" placeholder="Search Channels...">
         <div id="channel-list">
-            <div class="channel-item" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" 
-                data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
+            <div class="channel-item" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd">
                 <img src="https://i.imgur.com/lyjZUke.png" alt="TV 5 HD">
-                <span class="channel-name">TV 5 HD</span>
+                <span class="channel-name">TV 5 HD (DASH)</span>
             </div>
-            <div class="channel-item" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" 
-                data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
-                <img src="https://i.imgur.com/LvswLsB.png" alt="ONE SPORTS">
-                <span class="channel-name">ONE SPORTS</span>
+            <div class="channel-item" data-source="http://fl2.moveonjoy.com/ACC_NETWORK/index.m3u8">
+                <img src="https://i.imgur.com/LvswLsB.png" alt="HLS Stream">
+                <span class="channel-name">HLS Stream (.m3u8)</span>
             </div>
         </div>
     </div>
@@ -123,7 +110,6 @@
             const searchBox = document.getElementById("search-box");
             const channels = document.querySelectorAll(".channel-item");
             const videoElement = document.getElementById("video-player");
-            player = new shaka.Player(videoElement);
 
             searchBox.addEventListener("input", function () {
                 const filter = searchBox.value.toLowerCase();
@@ -136,86 +122,63 @@
             channels.forEach(channel => {
                 channel.addEventListener("click", function () {
                     const videoSource = channel.getAttribute("data-source");
-                    const key = channel.getAttribute("data-key");
-                    loadVideo(videoSource, key);
+                    loadVideo(videoSource);
                 });
             });
 
-            // Auto play first channel
             if (channels.length > 0) {
-                const firstChannel = channels[0];
-                const firstVideoSource = firstChannel.getAttribute("data-source");
-                const firstKey = firstChannel.getAttribute("data-key");
-                loadVideo(firstVideoSource, firstKey);
+                loadVideo(channels[0].getAttribute("data-source"));
             }
         });
 
-        // Load the selected video
-        function loadVideo(sourceUrl, key) {
-    const videoElement = document.getElementById('video-player');
-    
-    // Destroy the existing player before creating a new one
-    if (player) {
-        player.destroy().then(() => {
-            console.log("Previous player destroyed. Loading new channel...");
-            initializePlayer(videoElement, sourceUrl, key); // Reinitialize player with updated UI config
-        }).catch((error) => {
-            console.error("Error destroying previous player: ", error);
-        });
-    } else {
-        initializePlayer(videoElement, sourceUrl, key);
-    }
-}
+        function loadVideo(sourceUrl) {
+            const videoElement = document.getElementById('video-player');
+            const videoContainer = document.getElementById('video-overlay');
 
-function initializePlayer(videoElement, sourceUrl, key) {
-    const videoContainer = document.getElementById('video-overlay');
-
-    // Destroy existing UI if it exists
-    if (videoContainer['ui']) {
-        videoContainer['ui'].destroy();
-    }
-
-    // Initialize Shaka Player instance
-    const shakaPlayer = new shaka.Player(videoElement);
-    player = shakaPlayer; // Store reference to the player
-
-    // Initialize Shaka UI Overlay
-    const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
-    videoContainer['ui'] = ui; // Store UI reference for future cleanup
-    
-           // Configure player with DRM (if needed)
-    player.configure({
-        drm: {
-            clearKeys: {
-                [key.split(":")[0]]: key.split(":")[1]
+            if (sourceUrl.endsWith('.m3u8')) {
+                if (Hls.isSupported()) {
+                    var hls = new Hls();
+                    hls.loadSource(sourceUrl);
+                    hls.attachMedia(videoElement);
+                    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                        videoElement.play();
+                    });
+                } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+                    videoElement.src = sourceUrl;
+                    videoElement.addEventListener('loadedmetadata', function () {
+                        videoElement.play();
+                    });
+                } else {
+                    console.error('HLS not supported');
+                }
+            } else {
+                if (player) {
+                    player.destroy().then(() => {
+                        initializeShakaPlayer(videoElement, sourceUrl, videoContainer);
+                    });
+                } else {
+                    initializeShakaPlayer(videoElement, sourceUrl, videoContainer);
+                }
             }
-        },
-        streaming: {
-            bufferingGoal: 30,
-            retryParameters: { maxAttempts: 5 }
         }
-    });
 
-    // Apply UI settings after player initialization
-    ui.configure({
-        'controls': false,
-        'seekBar': false,
-        'volumeBar': false,
-        'fullscreenButton': false,
-        'muteButton': false,
-    });
+        function initializeShakaPlayer(videoElement, sourceUrl, videoContainer) {
+            const ui = new shaka.ui.Overlay(new shaka.Player(videoElement), videoContainer, videoElement);
+            videoContainer['ui'] = ui;
 
-    // Check if Shaka Player is supported in the browser
-    if (shaka.Player.isBrowserSupported()) {
-        player.load(sourceUrl).then(() => {
-            console.log('Video loaded successfully!');
-        }).catch(error => {
-            console.error('Error loading video:', error);
-        });
-    } else {
-        console.error('Shaka Player is not supported in this browser.');
-    }
-}
+            player = ui.getPlayer();
+
+            if (shaka.Player.isBrowserSupported()) {
+                player.load(sourceUrl).then(() => {
+                    console.log('DASH video loaded successfully!');
+                }).catch(error => {
+                    console.error('Error loading DASH video:', error);
+                });
+            } else {
+                console.error('Shaka Player is not supported in this browser.');
+            }
+        }
     </script>
+
 </body>
 </html>
