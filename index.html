@@ -7,6 +7,7 @@
 
     <!-- Shaka Player -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.min.css">
 
     <style>
@@ -155,17 +156,41 @@ if (channels.length > 0) {
 
         // Load the selected video
         function loadVideo(sourceUrl, key) {
-    const videoElement = document.getElementById('video-player');
-    
-    // Destroy the existing player before creating a new one
-    if (player) {
-        player.destroy().then(() => {
-            console.log("Previous player destroyed. Loading new channel...");
-            initializePlayer(videoElement, sourceUrl, key); // Reinitialize player with updated UI config
-        }).catch((error) => {
-            console.error("Error destroying previous player: ", error);
-        });
+    const videoElement = document.getElementById("video-player");
+
+    // Check if the source is an HLS (.m3u8) stream
+    if (sourceUrl.endsWith(".m3u8")) {
+        console.log("Loading HLS stream:", sourceUrl);
+
+        // Destroy Shaka Player (if exists)
+        if (player) {
+            player.destroy().then(() => {
+                console.log("Shaka Player destroyed.");
+            }).catch((error) => {
+                console.error("Error destroying Shaka Player:", error);
+            });
+            player = null;
+        }
+
+        // Use native HLS support or HLS.js for playback
+        if (videoElement.canPlayType("application/vnd.apple.mpegurl")) {
+            // Native HLS support (Safari, iOS)
+            videoElement.src = sourceUrl;
+            videoElement.play().catch(error => console.error("Autoplay prevented:", error));
+        } else if (Hls.isSupported()) {
+            // Use HLS.js for other browsers
+            const hls = new Hls();
+            hls.loadSource(sourceUrl);
+            hls.attachMedia(videoElement);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                videoElement.play().catch(error => console.error("Autoplay prevented:", error));
+            });
+        } else {
+            console.error("HLS is not supported on this browser.");
+        }
     } else {
+        // If the stream is DASH (.mpd), use Shaka Player
+        console.log("Loading DASH stream with Shaka:", sourceUrl);
         initializePlayer(videoElement, sourceUrl, key);
     }
 }
