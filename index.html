@@ -104,7 +104,7 @@
     <div id="channel-list-container">
         <input type="text" id="search-box" placeholder="Search Channels...">
         <div id="channel-list">
-            <div class="channel-item" data-source="https://fl2.moveonjoy.com/ACC_NETWORK/index.m3u8">
+            <div class="channel-item" data-source="http://fl2.moveonjoy.com/ACC_NETWORK/index.m3u8">
                 <img src="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/acc-network-us.png?raw=true" alt="ACC">
                 <span class="channel-name">ACC</span>
             </div>
@@ -113,143 +113,114 @@
                 <img src="https://i.imgur.com/lyjZUke.png" alt="TV 5 HD">
                 <span class="channel-name">TV 5 HD</span>
             </div>
-            <div class="channel-item" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" 
-                data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
-                <img src="https://i.imgur.com/LvswLsB.png" alt="ONE SPORTS">
-                <span class="channel-name">ONE SPORTS</span>
-            </div>
         </div>
     </div>
 
     <script>
         let player;
-let hls;
 
-document.addEventListener("DOMContentLoaded", function () {
-    const searchBox = document.getElementById("search-box");
-    const channels = document.querySelectorAll(".channel-item");
-    const videoElement = document.getElementById("video-player");
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchBox = document.getElementById("search-box");
+            const channels = document.querySelectorAll(".channel-item");
+            const videoElement = document.getElementById("video-player");
+            player = new shaka.Player(videoElement);
 
-    player = new shaka.Player(videoElement);
-
-    searchBox.addEventListener("input", function () {
-        const filter = searchBox.value.toLowerCase();
-        channels.forEach(channel => {
-            const name = channel.querySelector(".channel-name").textContent.toLowerCase();
-            channel.style.display = name.includes(filter) ? "flex" : "none";
-        });
-    });
-
-    channels.forEach(channel => {
-        channel.addEventListener("click", function () {
-            const videoSource = channel.getAttribute("data-source");
-            const key = channel.getAttribute("data-key");
-            loadVideo(videoSource, key);
-        });
-    });
-
-    // Auto play first channel
-    if (channels.length > 0) {
-        const firstChannel = channels[0];
-        const firstVideoSource = firstChannel.getAttribute("data-source");
-        const firstKey = firstChannel.hasAttribute("data-key") ? firstChannel.getAttribute("data-key") : null;
-        loadVideo(firstVideoSource, firstKey);
-    }
-});
-
-// Load the selected video
-function loadVideo(sourceUrl, key) {
-    const videoElement = document.getElementById("video-player");
-
-    // Stop any existing playback
-    videoElement.pause();
-    videoElement.src = "";
-    videoElement.load();  // Reset video element
-
-    if (hls) {
-        hls.destroy();
-        hls = null;
-    }
-
-    if (sourceUrl.endsWith(".m3u8")) {
-        console.log("Loading HLS stream:", sourceUrl);
-
-        // Destroy Shaka Player
-        if (player) {
-            player.destroy().then(() => {
-                console.log("Shaka Player destroyed.");
-            }).catch(error => console.error("Error destroying Shaka Player:", error));
-            player = null;
-        }
-
-        if (videoElement.canPlayType("application/vnd.apple.mpegurl")) {
-            // Native HLS support (Safari, iOS)
-            videoElement.src = sourceUrl;
-            videoElement.play().catch(error => console.error("Autoplay prevented:", error));
-        } else if (Hls.isSupported()) {
-            // Use HLS.js for other browsers
-            hls = new Hls();
-            hls.loadSource(sourceUrl);
-            hls.attachMedia(videoElement);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                videoElement.play().catch(error => console.error("Autoplay prevented:", error));
+            searchBox.addEventListener("input", function () {
+                const filter = searchBox.value.toLowerCase();
+                channels.forEach(channel => {
+                    const name = channel.querySelector(".channel-name").textContent.toLowerCase();
+                    channel.style.display = name.includes(filter) ? "flex" : "none";
+                });
             });
-        } else {
-            console.error("HLS is not supported on this browser.");
-        }
-    } else {
-        console.log("Loading DASH stream with Shaka:", sourceUrl);
-        initializePlayer(videoElement, sourceUrl, key);
-    }
-}
 
-function initializePlayer(videoElement, sourceUrl, key) {
-    const videoContainer = document.getElementById('video-overlay');
+            channels.forEach(channel => {
+                channel.addEventListener("click", function () {
+                    const videoSource = channel.getAttribute("data-source");
+                    const key = channel.getAttribute("data-key");
+                    loadVideo(videoSource, key);
+                });
+            });
 
-    if (videoContainer['ui']) {
-        videoContainer['ui'].destroy();
-    }
-
-    player = new shaka.Player(videoElement);
-
-    const ui = new shaka.ui.Overlay(player, videoContainer, videoElement);
-    videoContainer['ui'] = ui;
-
-    if (key) {
-        player.configure({
-            drm: {
-                clearKeys: {
-                    [key.split(":")[0]]: key.split(":")[1]
-                }
-            },
-            streaming: {
-                bufferingGoal: 30,
-                retryParameters: { maxAttempts: 5 }
+            // Auto play first channel
+            if (channels.length > 0) {
+                const firstChannel = channels[0];
+                const firstVideoSource = firstChannel.getAttribute("data-source");
+                const firstKey = firstChannel.hasAttribute("data-key") ? firstChannel.getAttribute("data-key") : null;
+                loadVideo(firstVideoSource, firstKey);
             }
         });
-    } else {
-        console.log("No DRM key provided, playing as a normal DASH stream.");
-    }
 
-    ui.configure({
-        'controls': false,
-        'seekBar': false,
-        'volumeBar': false,
-        'fullscreenButton': false,
-        'muteButton': false,
-    });
+        function loadVideo(sourceUrl, key) {
+            const videoElement = document.getElementById("video-player");
 
-    if (shaka.Player.isBrowserSupported()) {
-        player.load(sourceUrl).then(() => {
-            console.log('Video loaded successfully!');
-            videoElement.play().catch(error => console.error('Autoplay prevented:', error));
-        }).catch(error => {
-            console.error('Error loading video:', error);
-        });
-    } else {
-        console.error('Shaka Player is not supported in this browser.');
-    }
-}
+            // Route HTTP streams through the proxy
+            if (sourceUrl.startsWith("http://")) {
+                sourceUrl = `http://localhost:4000/proxy/${sourceUrl.replace("http://", "")}`;
+                console.warn("Using proxy for HTTP stream:", sourceUrl);
+            }
+
+            if (sourceUrl.endsWith(".m3u8")) {
+                if (Hls.isSupported()) {
+                    const hls = new Hls();
+                    hls.loadSource(sourceUrl);
+                    hls.attachMedia(videoElement);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        videoElement.play().catch(error => console.error("Autoplay prevented:", error));
+                    });
+                } else {
+                    console.error("HLS is not supported.");
+                }
+            } else {
+                initializePlayer(videoElement, sourceUrl, key);
+            }
+        }
+
+        function initializePlayer(videoElement, sourceUrl, key) {
+            const videoContainer = document.getElementById('video-overlay');
+
+            if (videoContainer['ui']) {
+                videoContainer['ui'].destroy();
+            }
+
+            const shakaPlayer = new shaka.Player(videoElement);
+            player = shakaPlayer;
+
+            const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
+            videoContainer['ui'] = ui;
+
+            if (key) {
+                player.configure({
+                    drm: {
+                        clearKeys: {
+                            [key.split(":")[0]]: key.split(":")[1]
+                        }
+                    },
+                    streaming: {
+                        bufferingGoal: 30,
+                        retryParameters: { maxAttempts: 5 }
+                    }
+                });
+            }
+
+            ui.configure({
+                'controls': false,
+                'seekBar': false,
+                'volumeBar': false,
+                'fullscreenButton': false,
+                'muteButton': false,
+            });
+
+            if (shaka.Player.isBrowserSupported()) {
+                player.load(sourceUrl).then(() => {
+                    console.log('Video loaded successfully!');
+                    videoElement.play().catch(error => console.error('Autoplay prevented:', error));
+                }).catch(error => {
+                    console.error('Error loading video:', error);
+                });
+            } else {
+                console.error('Shaka Player is not supported in this browser.');
+            }
+        }
     </script>
 </body>
 </html>
