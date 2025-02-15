@@ -124,61 +124,55 @@
     <script>
         let player;
 
-        document.addEventListener("DOMContentLoaded", function () {
-            const searchBox = document.getElementById("search-box");
-            const channels = document.querySelectorAll(".channel-item");
-            const videoElement = document.getElementById("video-player");
-            player = new shaka.Player(videoElement);
-
-            searchBox.addEventListener("input", function () {
-                const filter = searchBox.value.toLowerCase();
-                channels.forEach(channel => {
-                    const name = channel.querySelector(".channel-name").textContent.toLowerCase();
-                    channel.style.display = name.includes(filter) ? "flex" : "none";
-                });
-            });
-
-            channels.forEach(channel => {
-                channel.addEventListener("click", function () {
-                    const videoSource = channel.getAttribute("data-source");
-                    const key = channel.getAttribute("data-key");
-                    loadVideo(videoSource, key);
-                });
-            });
-
-            // Auto play first channel
-if (channels.length > 0) {
-    const firstChannel = channels[0];
-    const firstVideoSource = firstChannel.getAttribute("data-source");
-    const firstKey = firstChannel.hasAttribute("data-key") ? firstChannel.getAttribute("data-key") : null;
-    loadVideo(firstVideoSource, firstKey);
-}
-
-        // Load the selected video
-        function loadVideo(sourceUrl, key) {
+document.addEventListener("DOMContentLoaded", function () {
+    const searchBox = document.getElementById("search-box");
+    const channels = document.querySelectorAll(".channel-item");
     const videoElement = document.getElementById("video-player");
 
-    // Check if the source is an HLS (.m3u8) stream
+    player = new shaka.Player(videoElement);
+
+    searchBox.addEventListener("input", function () {
+        const filter = searchBox.value.toLowerCase();
+        channels.forEach(channel => {
+            const name = channel.querySelector(".channel-name").textContent.toLowerCase();
+            channel.style.display = name.includes(filter) ? "flex" : "none";
+        });
+    });
+
+    channels.forEach(channel => {
+        channel.addEventListener("click", function () {
+            const videoSource = channel.getAttribute("data-source");
+            const key = channel.getAttribute("data-key");
+            loadVideo(videoSource, key);
+        });
+    });
+
+    // Auto play first channel
+    if (channels.length > 0) {
+        const firstChannel = channels[0];
+        const firstVideoSource = firstChannel.getAttribute("data-source");
+        const firstKey = firstChannel.hasAttribute("data-key") ? firstChannel.getAttribute("data-key") : null;
+        loadVideo(firstVideoSource, firstKey);
+    }
+});
+
+// Load the selected video
+function loadVideo(sourceUrl, key) {
+    const videoElement = document.getElementById("video-player");
+
     if (sourceUrl.endsWith(".m3u8")) {
         console.log("Loading HLS stream:", sourceUrl);
 
-        // Destroy Shaka Player (if exists)
+        // Destroy Shaka Player
         if (player) {
-            player.destroy().then(() => {
-                console.log("Shaka Player destroyed.");
-            }).catch((error) => {
-                console.error("Error destroying Shaka Player:", error);
-            });
-            player = null;
+            player.destroy().then(() => console.log("Shaka Player destroyed.")).catch(error => console.error("Error destroying Shaka Player:", error));
         }
 
-        // Use native HLS support or HLS.js for playback
+        // Native HLS support (Safari) or HLS.js (Other Browsers)
         if (videoElement.canPlayType("application/vnd.apple.mpegurl")) {
-            // Native HLS support (Safari, iOS)
             videoElement.src = sourceUrl;
             videoElement.play().catch(error => console.error("Autoplay prevented:", error));
         } else if (Hls.isSupported()) {
-            // Use HLS.js for other browsers
             const hls = new Hls();
             hls.loadSource(sourceUrl);
             hls.attachMedia(videoElement);
@@ -189,7 +183,6 @@ if (channels.length > 0) {
             console.error("HLS is not supported on this browser.");
         }
     } else {
-        // If the stream is DASH (.mpd), use Shaka Player
         console.log("Loading DASH stream with Shaka:", sourceUrl);
         initializePlayer(videoElement, sourceUrl, key);
     }
@@ -202,13 +195,14 @@ function initializePlayer(videoElement, sourceUrl, key) {
         videoContainer['ui'].destroy();
     }
 
-    const shakaPlayer = new shaka.Player(videoElement);
-    player = shakaPlayer;
+    // Reinitialize Shaka Player
+    player = new shaka.Player(videoElement);
 
-    const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
+    // Shaka UI Overlay
+    const ui = new shaka.ui.Overlay(player, videoContainer, videoElement);
     videoContainer['ui'] = ui;
 
-    // Configure player for DRM only if a key is provided
+    // Configure DRM if needed
     if (key) {
         player.configure({
             drm: {
@@ -222,7 +216,7 @@ function initializePlayer(videoElement, sourceUrl, key) {
             }
         });
     } else {
-        console.log("No DRM key provided, playing as a normal HLS stream.");
+        console.log("No DRM key provided, playing as a normal DASH stream.");
     }
 
     ui.configure({
