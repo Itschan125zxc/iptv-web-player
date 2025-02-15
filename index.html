@@ -96,7 +96,7 @@
 
     <div id="video-container">
         <div id="video-overlay" class="shaka-overlay">
-            <video id="video-player" class="shaka-video" autoplay></video>
+            <video id="video-player" class="shaka-video" autoplay muted playsinline></video>
         </div>
     </div>
 
@@ -170,20 +170,16 @@
 function initializePlayer(videoElement, sourceUrl, key) {
     const videoContainer = document.getElementById('video-overlay');
 
-    // Destroy existing UI if it exists
     if (videoContainer['ui']) {
         videoContainer['ui'].destroy();
     }
 
-    // Initialize Shaka Player instance
     const shakaPlayer = new shaka.Player(videoElement);
-    player = shakaPlayer; // Store reference to the player
+    player = shakaPlayer;
 
-    // Initialize Shaka UI Overlay
     const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
-    videoContainer['ui'] = ui; // Store UI reference for future cleanup
-    
-           // Configure player with DRM (if needed)
+    videoContainer['ui'] = ui;
+
     player.configure({
         drm: {
             clearKeys: {
@@ -196,7 +192,6 @@ function initializePlayer(videoElement, sourceUrl, key) {
         }
     });
 
-    // Apply UI settings after player initialization
     ui.configure({
         'controls': false,
         'seekBar': false,
@@ -205,10 +200,11 @@ function initializePlayer(videoElement, sourceUrl, key) {
         'muteButton': false,
     });
 
-    // Check if Shaka Player is supported in the browser
     if (shaka.Player.isBrowserSupported()) {
         player.load(sourceUrl).then(() => {
             console.log('Video loaded successfully!');
+            videoElement.muted = true;  // Ensure muted for autoplay compliance
+            videoElement.play().catch(error => console.error('Autoplay prevented:', error));
         }).catch(error => {
             console.error('Error loading video:', error);
         });
