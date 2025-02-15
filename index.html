@@ -18,6 +18,7 @@
             padding: 0;
             display: flex;
             height: 100vh;
+            position: relative;
         }
 
         #video-container {
@@ -42,16 +43,39 @@
             height: auto;
         }
 
-        #channel-list-container {
+        #sidebar {
             width: 250px;
             height: 100vh;
-            overflow-y: auto;
             background-color: #1e1e1e;
             padding: 10px;
             border-left: 2px solid #444;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            overflow-y: auto;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(100%);
+        }
+
+        #sidebar.show {
+            transform: translateX(0);
+        }
+
+        #toggle-button {
+            position: absolute;
+            right: 260px;
+            top: 20px;
+            background-color: #282828;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        #toggle-button:hover {
+            background-color: #444;
         }
 
         #search-box {
@@ -91,14 +115,15 @@
     </style>
 </head>
 <body>
-
+    <button id="toggle-button">☰ Channels</button>
+    
     <div id="video-container">
         <div id="video-overlay" class="shaka-overlay">
             <video id="video-player" class="shaka-video" autoplay></video>
         </div>
     </div>
 
-    <div id="channel-list-container">
+    <div id="sidebar">
         <input type="text" id="search-box" placeholder="Search Channels...">
         <div id="channel-list">
             <div class="channel-item" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" 
@@ -116,12 +141,17 @@
 
     <script>
         let player;
-
         document.addEventListener("DOMContentLoaded", function () {
             const searchBox = document.getElementById("search-box");
             const channels = document.querySelectorAll(".channel-item");
             const videoElement = document.getElementById("video-player");
+            const sidebar = document.getElementById("sidebar");
+            const toggleButton = document.getElementById("toggle-button");
             player = new shaka.Player(videoElement);
+
+            toggleButton.addEventListener("click", function () {
+                sidebar.classList.toggle("show");
+            });
 
             searchBox.addEventListener("input", function () {
                 const filter = searchBox.value.toLowerCase();
@@ -139,7 +169,6 @@
                 });
             });
 
-            // Auto play first channel
             if (channels.length > 0) {
                 const firstChannel = channels[0];
                 const firstVideoSource = firstChannel.getAttribute("data-source");
@@ -147,74 +176,6 @@
                 loadVideo(firstVideoSource, firstKey);
             }
         });
-
-        // Load the selected video
-        function loadVideo(sourceUrl, key) {
-    const videoElement = document.getElementById('video-player');
-    
-    // Destroy the existing player before creating a new one
-    if (player) {
-        player.destroy().then(() => {
-            console.log("Previous player destroyed. Loading new channel...");
-            initializePlayer(videoElement, sourceUrl, key); // Reinitialize player with updated UI config
-        }).catch((error) => {
-            console.error("Error destroying previous player: ", error);
-        });
-    } else {
-        initializePlayer(videoElement, sourceUrl, key);
-    }
-}
-
-function initializePlayer(videoElement, sourceUrl, key) {
-    const videoContainer = document.getElementById('video-overlay');
-
-    // Destroy existing UI if it exists
-    if (videoContainer['ui']) {
-        videoContainer['ui'].destroy();
-    }
-
-    // Initialize Shaka Player instance
-    const shakaPlayer = new shaka.Player(videoElement);
-    player = shakaPlayer; // Store reference to the player
-
-    // Initialize Shaka UI Overlay
-    const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
-    videoContainer['ui'] = ui; // Store UI reference for future cleanup
-    
-           // Configure player with DRM (if needed)
-    player.configure({
-        drm: {
-            clearKeys: {
-                [key.split(":")[0]]: key.split(":")[1]
-            }
-        },
-        streaming: {
-            bufferingGoal: 30,
-            retryParameters: { maxAttempts: 5 }
-        }
-    });
-
-    // Apply UI settings after player initialization
-    ui.configure({
-        'controls': false,
-        'seekBar': false,
-        'volumeBar': false,
-        'addSeekBar': false, // Disable the seek bar completely
-        'fullscreenButton': false,
-        'muteButton': false,
-    });
-
-    // Check if Shaka Player is supported in the browser
-    if (shaka.Player.isBrowserSupported()) {
-        player.load(sourceUrl).then(() => {
-            console.log('Video loaded successfully!');
-        }).catch(error => {
-            console.error('Error loading video:', error);
-        });
-    } else {
-        console.error('Shaka Player is not supported in this browser.');
-    }
-}
     </script>
 </body>
 </html>
