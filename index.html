@@ -1,226 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IPTV Player</title>
-
-    <!-- Shaka Player -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.min.css">
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: white;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 100vh;
-        }
-
-        #video-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 90vh;
-        }
-
-        .shaka-overlay {
-            width: 80%;
-            max-width: 900px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        video {
-            width: 100%;
-            height: auto;
-            border-radius: 10px;
-        }
-
-        #channel-list-container {
-            width: 250px;
-            height: 100vh;
-            overflow-y: auto;
-            background-color: #1e1e1e;
-            padding: 10px;
-            border-left: 2px solid #444;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        #search-box {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border: 1px solid #444;
-            background-color: #282828;
-            color: white;
-        }
-
-        .channel-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background 0.3s;
-            background-color: #282828;
-        }
-
-        .channel-item:hover {
-            background-color: #444;
-        }
-
-        .channel-item img {
-            width: 50px;
-            height: auto;
-            border-radius: 5px;
-            margin-right: 10px;
-        }
-
-        .channel-name {
-            font-size: 14px;
-        }
-    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.compiled.min.js"></script>
 </head>
 <body>
 
-    <div id="video-container">
-        <div id="video-overlay" class="shaka-overlay">
-            <video id="video-player" class="shaka-video" autoplay playsinline></video>
-        </div>
-    </div>
-
-    <div id="channel-list-container">
-        <input type="text" id="search-box" placeholder="Search Channels...">
-        <div id="channel-list">
-            <div class="channel-item" data-source="http://fl2.moveonjoy.com/ACC_NETWORK/index.m3u8">
-                <img src="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/acc-network-us.png?raw=true" alt="ACC">
-                <span class="channel-name">ACC</span>
-            </div>
-            <div class="channel-item" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" 
-                data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
-                <img src="https://i.imgur.com/lyjZUke.png" alt="TV 5 HD">
-                <span class="channel-name">TV 5 HD</span>
-            </div>
-        </div>
-    </div>
+    <video id="video-player" width="800" height="450" controls autoplay></video>
+    <button onclick="loadVideo('http://fl2.moveonjoy.com/ACC_NETWORK/index.m3u8')">Play HLS</button>
+    <button onclick="loadVideo('https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd')">Play DASH</button>
 
     <script>
-        let player;
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const searchBox = document.getElementById("search-box");
-            const channels = document.querySelectorAll(".channel-item");
-            const videoElement = document.getElementById("video-player");
-            player = new shaka.Player(videoElement);
-
-            searchBox.addEventListener("input", function () {
-                const filter = searchBox.value.toLowerCase();
-                channels.forEach(channel => {
-                    const name = channel.querySelector(".channel-name").textContent.toLowerCase();
-                    channel.style.display = name.includes(filter) ? "flex" : "none";
-                });
-            });
-
-            channels.forEach(channel => {
-                channel.addEventListener("click", function () {
-                    const videoSource = channel.getAttribute("data-source");
-                    const key = channel.getAttribute("data-key");
-                    loadVideo(videoSource, key);
-                });
-            });
-
-            // Auto play first channel
-            if (channels.length > 0) {
-                const firstChannel = channels[0];
-                const firstVideoSource = firstChannel.getAttribute("data-source");
-                const firstKey = firstChannel.hasAttribute("data-key") ? firstChannel.getAttribute("data-key") : null;
-                loadVideo(firstVideoSource, firstKey);
-            }
-        });
-
-        function loadVideo(sourceUrl, key) {
+        function loadVideo(sourceUrl) {
             const videoElement = document.getElementById("video-player");
 
-            // Route HTTP streams through the proxy
+            // Fix Mixed Content Issues with CORS Proxy
             if (sourceUrl.startsWith("http://")) {
-                sourceUrl = `http://localhost:4000/proxy/${sourceUrl.replace("http://", "")}`;
-                console.warn("Using proxy for HTTP stream:", sourceUrl);
+                sourceUrl = `https://corsproxy.io/?${encodeURIComponent(sourceUrl)}`;
+                console.warn("Using proxy:", sourceUrl);
             }
 
+            // HLS (.m3u8) Handling
             if (sourceUrl.endsWith(".m3u8")) {
                 if (Hls.isSupported()) {
                     const hls = new Hls();
                     hls.loadSource(sourceUrl);
                     hls.attachMedia(videoElement);
                     hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                        videoElement.play().catch(error => console.error("Autoplay prevented:", error));
+                        videoElement.play().catch(err => console.error("Autoplay prevented:", err));
                     });
                 } else {
-                    console.error("HLS is not supported.");
+                    console.error("HLS not supported.");
+                }
+            }
+            // DASH (.mpd) Handling
+            else if (sourceUrl.endsWith(".mpd")) {
+                if (shaka.Player.isBrowserSupported()) {
+                    const player = new shaka.Player(videoElement);
+                    player.load(sourceUrl).then(() => {
+                        console.log("DASH video loaded successfully!");
+                        videoElement.play().catch(err => console.error("Autoplay prevented:", err));
+                    }).catch(err => {
+                        console.error("Error loading DASH video:", err);
+                    });
+                } else {
+                    console.error("Shaka Player is not supported.");
                 }
             } else {
-                initializePlayer(videoElement, sourceUrl, key);
-            }
-        }
-
-        function initializePlayer(videoElement, sourceUrl, key) {
-            const videoContainer = document.getElementById('video-overlay');
-
-            if (videoContainer['ui']) {
-                videoContainer['ui'].destroy();
-            }
-
-            const shakaPlayer = new shaka.Player(videoElement);
-            player = shakaPlayer;
-
-            const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
-            videoContainer['ui'] = ui;
-
-            if (key) {
-                player.configure({
-                    drm: {
-                        clearKeys: {
-                            [key.split(":")[0]]: key.split(":")[1]
-                        }
-                    },
-                    streaming: {
-                        bufferingGoal: 30,
-                        retryParameters: { maxAttempts: 5 }
-                    }
-                });
-            }
-
-            ui.configure({
-                'controls': false,
-                'seekBar': false,
-                'volumeBar': false,
-                'fullscreenButton': false,
-                'muteButton': false,
-            });
-
-            if (shaka.Player.isBrowserSupported()) {
-                player.load(sourceUrl).then(() => {
-                    console.log('Video loaded successfully!');
-                    videoElement.play().catch(error => console.error('Autoplay prevented:', error));
-                }).catch(error => {
-                    console.error('Error loading video:', error);
-                });
-            } else {
-                console.error('Shaka Player is not supported in this browser.');
+                console.error("Unsupported format:", sourceUrl);
             }
         }
     </script>
+
 </body>
 </html>
