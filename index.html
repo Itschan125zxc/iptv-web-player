@@ -96,7 +96,7 @@
 
     <div id="video-container">
         <div id="video-overlay" class="shaka-overlay">
-            <video id="video-player" class="shaka-video" autoplay muted playsinline></video>
+            <video id="video-player" class="shaka-video" autoplay playsinline></video>
         </div>
     </div>
 
@@ -203,7 +203,6 @@ function initializePlayer(videoElement, sourceUrl, key) {
     if (shaka.Player.isBrowserSupported()) {
         player.load(sourceUrl).then(() => {
             console.log('Video loaded successfully!');
-            videoElement.muted = true;  // Ensure muted for autoplay compliance
             videoElement.play().catch(error => console.error('Autoplay prevented:', error));
         }).catch(error => {
             console.error('Error loading video:', error);
