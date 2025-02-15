@@ -123,6 +123,7 @@
 
     <script>
         let player;
+let hls;
 
 document.addEventListener("DOMContentLoaded", function () {
     const searchBox = document.getElementById("search-box");
@@ -160,20 +161,34 @@ document.addEventListener("DOMContentLoaded", function () {
 function loadVideo(sourceUrl, key) {
     const videoElement = document.getElementById("video-player");
 
+    // Stop any existing playback
+    videoElement.pause();
+    videoElement.src = "";
+    videoElement.load();  // Reset video element
+
+    if (hls) {
+        hls.destroy();
+        hls = null;
+    }
+
     if (sourceUrl.endsWith(".m3u8")) {
         console.log("Loading HLS stream:", sourceUrl);
 
         // Destroy Shaka Player
         if (player) {
-            player.destroy().then(() => console.log("Shaka Player destroyed.")).catch(error => console.error("Error destroying Shaka Player:", error));
+            player.destroy().then(() => {
+                console.log("Shaka Player destroyed.");
+            }).catch(error => console.error("Error destroying Shaka Player:", error));
+            player = null;
         }
 
-        // Native HLS support (Safari) or HLS.js (Other Browsers)
         if (videoElement.canPlayType("application/vnd.apple.mpegurl")) {
+            // Native HLS support (Safari, iOS)
             videoElement.src = sourceUrl;
             videoElement.play().catch(error => console.error("Autoplay prevented:", error));
         } else if (Hls.isSupported()) {
-            const hls = new Hls();
+            // Use HLS.js for other browsers
+            hls = new Hls();
             hls.loadSource(sourceUrl);
             hls.attachMedia(videoElement);
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -195,14 +210,11 @@ function initializePlayer(videoElement, sourceUrl, key) {
         videoContainer['ui'].destroy();
     }
 
-    // Reinitialize Shaka Player
     player = new shaka.Player(videoElement);
 
-    // Shaka UI Overlay
     const ui = new shaka.ui.Overlay(player, videoContainer, videoElement);
     videoContainer['ui'] = ui;
 
-    // Configure DRM if needed
     if (key) {
         player.configure({
             drm: {
