@@ -150,26 +150,72 @@
             }
         });
 
+        // Load the selected video
         function loadVideo(sourceUrl, key) {
-            if (!shaka.Player.isBrowserSupported()) {
-                console.error("Shaka Player is not supported in this browser.");
-                return;
+    const videoElement = document.getElementById('video-player');
+    
+    // Destroy the existing player before creating a new one
+    if (player) {
+        player.destroy().then(() => {
+            console.log("Previous player destroyed. Loading new channel...");
+            initializePlayer(videoElement, sourceUrl, key); // Reinitialize player with updated UI config
+        }).catch((error) => {
+            console.error("Error destroying previous player: ", error);
+        });
+    } else {
+        initializePlayer(videoElement, sourceUrl, key);
+    }
+}
+
+function initializePlayer(videoElement, sourceUrl, key) {
+    const videoContainer = document.getElementById('video-overlay');
+
+    // Destroy existing UI if it exists
+    if (videoContainer['ui']) {
+        videoContainer['ui'].destroy();
+    }
+
+    // Initialize Shaka Player instance
+    const shakaPlayer = new shaka.Player(videoElement);
+    player = shakaPlayer; // Store reference to the player
+
+    // Initialize Shaka UI Overlay
+    const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
+    videoContainer['ui'] = ui; // Store UI reference for future cleanup
+    
+           // Configure player with DRM (if needed)
+    player.configure({
+        drm: {
+            clearKeys: {
+                [key.split(":")[0]]: key.split(":")[1]
             }
-
-            player.configure({
-                drm: {
-                    clearKeys: {
-                        [key.split(":")[0]]: key.split(":")[1]
-                    }
-                }
-            });
-
-            player.load(sourceUrl).then(() => {
-                console.log("Video loaded successfully!");
-            }).catch(error => {
-                console.error("Error loading video:", error);
-            });
+        },
+        streaming: {
+            bufferingGoal: 30,
+            retryParameters: { maxAttempts: 5 }
         }
+    });
+
+    // Apply UI settings after player initialization
+    ui.configure({
+        'controls': false,
+        'seekBar': false,
+        'volumeBar': false,
+        'fullscreenButton': false,
+        'muteButton': false,
+    });
+
+    // Check if Shaka Player is supported in the browser
+    if (shaka.Player.isBrowserSupported()) {
+        player.load(sourceUrl).then(() => {
+            console.log('Video loaded successfully!');
+        }).catch(error => {
+            console.error('Error loading video:', error);
+        });
+    } else {
+        console.error('Shaka Player is not supported in this browser.');
+    }
+}
     </script>
 </body>
 </html>
