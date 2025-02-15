@@ -1,59 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IPTV Player</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.compiled.min.js"></script>
+
+    <!-- Shaka Player -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #video-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 90vh;
+        }
+
+        .shaka-overlay {
+            width: 80%;
+            max-width: 900px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        #channel-list-container {
+            width: 250px;
+            height: 100vh;
+            overflow-y: auto;
+            background-color: #1e1e1e;
+            padding: 10px;
+            border-left: 2px solid #444;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #search-box {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #282828;
+            color: white;
+        }
+
+        .channel-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s;
+            background-color: #282828;
+        }
+
+        .channel-item:hover {
+            background-color: #444;
+        }
+
+        .channel-item img {
+            width: 50px;
+            height: auto;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .channel-name {
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
 
-    <video id="video-player" width="800" height="450" controls autoplay></video>
-    <button onclick="loadVideo('http://fl2.moveonjoy.com/ACC_NETWORK/index.m3u8')">Play HLS</button>
-    <button onclick="loadVideo('https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd')">Play DASH</button>
+    <div id="video-container">
+        <div id="video-overlay" class="shaka-overlay">
+            <video id="video-player" class="shaka-video" autoplay></video>
+        </div>
+    </div>
+
+    <div id="channel-list-container">
+        <input type="text" id="search-box" placeholder="Search Channels...">
+        <div id="channel-list">
+            <div class="channel-item" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" 
+                data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
+                <img src="https://i.imgur.com/lyjZUke.png" alt="TV 5 HD">
+                <span class="channel-name">TV 5 HD</span>
+            </div>
+            <div class="channel-item" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" 
+                data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
+                <img src="https://i.imgur.com/LvswLsB.png" alt="ONE SPORTS">
+                <span class="channel-name">ONE SPORTS</span>
+            </div>
+        </div>
+    </div>
 
     <script>
-        function loadVideo(sourceUrl) {
+        let player;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchBox = document.getElementById("search-box");
+            const channels = document.querySelectorAll(".channel-item");
             const videoElement = document.getElementById("video-player");
+            player = new shaka.Player(videoElement);
 
-            // Fix Mixed Content Issues with CORS Proxy
-            if (sourceUrl.startsWith("http://")) {
-                sourceUrl = `https://corsproxy.io/?${encodeURIComponent(sourceUrl)}`;
-                console.warn("Using proxy:", sourceUrl);
-            }
+            searchBox.addEventListener("input", function () {
+                const filter = searchBox.value.toLowerCase();
+                channels.forEach(channel => {
+                    const name = channel.querySelector(".channel-name").textContent.toLowerCase();
+                    channel.style.display = name.includes(filter) ? "flex" : "none";
+                });
+            });
 
-            // HLS (.m3u8) Handling
-            if (sourceUrl.endsWith(".m3u8")) {
-                if (Hls.isSupported()) {
-                    const hls = new Hls();
-                    hls.loadSource(sourceUrl);
-                    hls.attachMedia(videoElement);
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                        videoElement.play().catch(err => console.error("Autoplay prevented:", err));
-                    });
-                } else {
-                    console.error("HLS not supported.");
-                }
+            channels.forEach(channel => {
+                channel.addEventListener("click", function () {
+                    const videoSource = channel.getAttribute("data-source");
+                    const key = channel.getAttribute("data-key");
+                    loadVideo(videoSource, key);
+                });
+            });
+
+            // Auto play first channel
+            if (channels.length > 0) {
+                const firstChannel = channels[0];
+                const firstVideoSource = firstChannel.getAttribute("data-source");
+                const firstKey = firstChannel.getAttribute("data-key");
+                loadVideo(firstVideoSource, firstKey);
             }
-            // DASH (.mpd) Handling
-            else if (sourceUrl.endsWith(".mpd")) {
-                if (shaka.Player.isBrowserSupported()) {
-                    const player = new shaka.Player(videoElement);
-                    player.load(sourceUrl).then(() => {
-                        console.log("DASH video loaded successfully!");
-                        videoElement.play().catch(err => console.error("Autoplay prevented:", err));
-                    }).catch(err => {
-                        console.error("Error loading DASH video:", err);
-                    });
-                } else {
-                    console.error("Shaka Player is not supported.");
-                }
-            } else {
-                console.error("Unsupported format:", sourceUrl);
+        });
+
+        // Load the selected video
+        function loadVideo(sourceUrl, key) {
+    const videoElement = document.getElementById('video-player');
+    
+    // Destroy the existing player before creating a new one
+    if (player) {
+        player.destroy().then(() => {
+            console.log("Previous player destroyed. Loading new channel...");
+            initializePlayer(videoElement, sourceUrl, key); // Reinitialize player with updated UI config
+        }).catch((error) => {
+            console.error("Error destroying previous player: ", error);
+        });
+    } else {
+        initializePlayer(videoElement, sourceUrl, key);
+    }
+}
+
+function initializePlayer(videoElement, sourceUrl, key) {
+    const videoContainer = document.getElementById('video-overlay');
+
+    // Destroy existing UI if it exists
+    if (videoContainer['ui']) {
+        videoContainer['ui'].destroy();
+    }
+
+    // Initialize Shaka Player instance
+    const shakaPlayer = new shaka.Player(videoElement);
+    player = shakaPlayer; // Store reference to the player
+
+    // Initialize Shaka UI Overlay
+    const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
+    videoContainer['ui'] = ui; // Store UI reference for future cleanup
+    
+           // Configure player with DRM (if needed)
+    player.configure({
+        drm: {
+            clearKeys: {
+                [key.split(":")[0]]: key.split(":")[1]
             }
+        },
+        streaming: {
+            bufferingGoal: 30,
+            retryParameters: { maxAttempts: 5 }
         }
-    </script>
+    });
 
+    // Apply UI settings after player initialization
+    ui.configure({
+        'controls': false,
+        'seekBar': false,
+        'volumeBar': false,
+        'fullscreenButton': false,
+        'muteButton': false,
+    });
+
+    // Check if Shaka Player is supported in the browser
+    if (shaka.Player.isBrowserSupported()) {
+        player.load(sourceUrl).then(() => {
+            console.log('Video loaded successfully!');
+        }).catch(error => {
+            console.error('Error loading video:', error);
+        });
+    } else {
+        console.error('Shaka Player is not supported in this browser.');
+    }
+}
+    </script>
 </body>
 </html>
