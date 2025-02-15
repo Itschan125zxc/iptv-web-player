@@ -146,13 +146,12 @@
             });
 
             // Auto play first channel
-            if (channels.length > 0) {
-                const firstChannel = channels[0];
-                const firstVideoSource = firstChannel.getAttribute("data-source");
-                const firstKey = firstChannel.getAttribute("data-key");
-                loadVideo(firstVideoSource, firstKey);
-            }
-        });
+if (channels.length > 0) {
+    const firstChannel = channels[0];
+    const firstVideoSource = firstChannel.getAttribute("data-source");
+    const firstKey = firstChannel.hasAttribute("data-key") ? firstChannel.getAttribute("data-key") : null;
+    loadVideo(firstVideoSource, firstKey);
+}
 
         // Load the selected video
         function loadVideo(sourceUrl, key) {
@@ -184,17 +183,22 @@ function initializePlayer(videoElement, sourceUrl, key) {
     const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
     videoContainer['ui'] = ui;
 
-    player.configure({
-        drm: {
-            clearKeys: {
-                [key.split(":")[0]]: key.split(":")[1]
+    // Configure player for DRM only if a key is provided
+    if (key) {
+        player.configure({
+            drm: {
+                clearKeys: {
+                    [key.split(":")[0]]: key.split(":")[1]
+                }
+            },
+            streaming: {
+                bufferingGoal: 30,
+                retryParameters: { maxAttempts: 5 }
             }
-        },
-        streaming: {
-            bufferingGoal: 30,
-            retryParameters: { maxAttempts: 5 }
-        }
-    });
+        });
+    } else {
+        console.log("No DRM key provided, playing as a normal HLS stream.");
+    }
 
     ui.configure({
         'controls': false,
