@@ -4,12 +4,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const videoContainer = document.getElementById('videoContainer');
 
     const player = new shaka.Player(videoElement);
-    const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
+    const ui = new shaka.ui.Overlay(player, videoContainer, videoElement);
+    
     videoContainer['ui'] = ui;
-
-    ui.configure({
-        'overflowMenuButtons': ['quality', 'language', 'captions', 'playback_rate', 'cast']
-    });
 
     async function loadChannel(channel) {
         videoElement.style.display = "block";
@@ -36,14 +33,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error("Error loading video:", error);
             alert("Error loading channel: " + channel.name);
         }
-    }
-
-    function initializePlayer(videoElement, sourceUrl, key) {
-    const videoContainer = document.getElementById('video-overlay');
-
-    // Destroy existing UI if it exists
-    if (videoContainer['ui']) {
-        videoContainer['ui'].destroy();
     }
 
     function populateChannels() {
