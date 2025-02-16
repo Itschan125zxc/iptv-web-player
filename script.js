@@ -59,7 +59,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 	
 
     function populateChannels() {
-	channelListElement.innerHTML = ''; // Clears existing list
         channels.forEach((channel) => {
             const li = document.createElement('li');
             li.textContent = channel.name;
