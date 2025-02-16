@@ -4,10 +4,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const channelListElement = document.getElementById('channelList');
     const videoContainer = document.getElementById('videoContainer');
 
+    // Hide PiP button if not supported
     if (!document.pictureInPictureEnabled) {
         pipButton.style.display = 'none';
     }
 
+    // Picture-in-Picture button functionality
     pipButton.addEventListener('click', () => {
         if (document.pictureInPictureElement) {
             document.exitPictureInPicture();
@@ -18,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // Initialize Shaka Player
     const player = new shaka.Player(videoElement);
     const ui = new shaka.ui.Overlay(player, videoContainer, videoElement);
 
@@ -25,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         'overflowMenuButtons': ['quality', 'language', 'captions', 'playback_rate', 'cast']
     });
 
+    // Function to load channel
     async function loadChannel(channel) {
         videoElement.style.display = "block";
         videoContainer.classList.add("active");
@@ -52,44 +56,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Function to populate channel list
     function populateChannels() {
-    channelListElement.innerHTML = ''; // Clears existing list before populating again
-    channels.forEach((channel) => {
-        const li = document.createElement('li');
-        li.textContent = channel.name;
-        li.onclick = () => {
-            document.querySelectorAll('.channel-list li').forEach(el => el.classList.remove('active'));
-            li.classList.add('active');
-            loadChannel(channel);
-        };
-        channelListElement.appendChild(li);
-    });
-}
+        if (!channelListElement) return; // Prevents errors if the element is not found
 
+        channelListElement.innerHTML = ''; // Clears existing list
+
+        console.log("Populating channels. Total:", channels.length);
+
+        channels.forEach((channel) => {
+            const li = document.createElement('li');
+            li.textContent = channel.name;
+            li.classList.add('channel-item'); // Add a class for easy selection
+
+            li.onclick = () => {
+                document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
+                li.classList.add('active');
+                loadChannel(channel);
+            };
+
+            channelListElement.appendChild(li);
+        });
+    }
+
+    // Function to filter channels by search
     function searchChannels() {
         let input = document.getElementById('searchInput').value.toLowerCase();
-        document.querySelectorAll('.channel-list li').forEach(channel => {
+        document.querySelectorAll('.channel-item').forEach(channel => {
             channel.style.display = channel.textContent.toLowerCase().includes(input) ? "list-item" : "none";
         });
     }
 
-    populateChannels();
+    // Expose search function globally
     window.searchChannels = searchChannels;
 });
-
-document.addEventListener('contextmenu', (e) => e.preventDefault());
-
-function ctrlShiftKey(e, keyCode) {
-    return e.ctrlKey && e.shiftKey && e.keyCode === keyCode.charCodeAt(0);
-    }
-
-document.onkeydown = (e) => {
-    if (
-        e.keyCode === 123 ||
-        ctrlShiftKey(e, 'I') ||
-        ctrlShiftKey(e, 'J') ||
-        ctrlShiftKey(e, 'C') ||
-        (e.ctrlKey && e.keyCode === 'U'.charCodeAt(0))
-        )
-        return false;
-};
