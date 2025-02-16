@@ -1,626 +1,260 @@
-<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV Player</title>
-
-    <!-- Shaka Player -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.min.css">
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0d0d0d;
-            color: white;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-            position: relative;
-        }
-
-        #video-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .shaka-overlay {
-            width: 80%;
-            max-width: 900px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        video {
-            width: 100%;
-            height: auto;
-        }
-
-        #toggle-button {
-            position: absolute;
-            right: 260px;
-            top: 20px;
-            background-color: #282828;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-
-        #toggle-button:hover {
-            background-color: #444;
-        }
-
-        #search-box {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border: 1px solid #444;
-            background-color: #282828;
-            color: white;
-        }
-
-        .channel-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .channel-item:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .channel-item img {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            margin-right: 10px;
-        }
-
-        .channel-name {
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
-
-    <div id="video-container">
-        <div id="video-overlay" class="shaka-overlay">
-            <video id="video-player" class="shaka-video" autoplay></video>
-        </div>
-    </div>
-
-    <div id="channel-list-container">
-        <input type="text" id="search-box" placeholder="Search Channels...">
-        <div id="channel-list">
-            <div class="channel-item" data-source="https://cdn-ue1-prod.tsv2.amagi.tv/linear/amg01006-abs-cbn-anc-global-dash-abscbnono/index.mpd" 
-    data-key="4bbdc78024a54662854b412d01fafa16:6039ec9b213aca913821677a28bd78ae">
-    <img src="https://i.imgur.com/7GwxLPr.png" alt="ANC">
-    <span class="channel-name">ANC</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1335/manifest.mpd" 
-    data-key="31363735313439343038343136333130:386c6b6a64704d4d3039354d4e6a6933">
-    <img src="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/united-states/animal-planet-us.png" alt="ANIMAL PLANET">
-    <span class="channel-name">ANIMAL PLANET</span>
-</div>
-
-<div class="channel-item" data-source="https://tglmp01.akamaized.net/out/v1/de55fad9216e4fe7ad8d2eed456ba1ec/manifest.mpd" 
-    data-key="edf1a715de9748638dd2fad75a419af2:2f5a3199b26e9b693ae881af7ff864cf">
-    <img src="https://i.imgur.com/utmMj7L.png" alt="ANIMAX">
-    <span class="channel-name">ANIMAX</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1342/manifest.mpd" 
-    data-key="31363735313536373634343534323132:71504433773565593837796d68613333">
-    <img src="https://i.imgur.com/IERcao8.png" alt="ASIAN FOOD NETWORK">
-    <span class="channel-name">ASIAN FOOD NETWORK</span>
-</div>
-
-<div class="channel-item" data-source="https://cnvg.katir.workers.dev/1182/manifest.mpd" 
-    data-key="31363233323239393136303432373230:3132373248597249506d6e31326c3246">
-    <img src="https://i.imgur.com/axpZjLc.png" alt="AXN">
-    <span class="channel-name">AXN</span>
-</div>
-            <div class="channel-item" data-source="https://qp-pldt-live-grp-03-prod.akamaized.net/out/u/cg_bbcearth_hd1.mpd" 
-    data-key="34ce95b60c424e169619816c5181aded:0e2a2117d705613542618f58bf26fc8e">
-    <img src="https://i.imgur.com/ivWFFAh.png" alt="BBC EARTH">
-    <span class="channel-name">BBC EARTH</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-09-prod.akamaized.net/out/u/cg_bbclifestyle.mpd" 
-    data-key="34880f56627c11ee8c990242ac120002:c23677c829bb244b79a3dc09ffd88ca0">
-    <img src="https://i.imgur.com/OAWBJOE.png" alt="BBC LIFESTYLE">
-    <span class="channel-name">BBC LIFESTYLE</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-06-prod.akamaized.net/out/u/cg_buko_sd.mpd" 
-    data-key="d273c085f2ab4a248e7bfc375229007d:7932354c3a84f7fc1b80efa6bcea0615">
-    <img src="https://i.imgur.com/wi9agDS.png" alt="BUKO">
-    <span class="channel-name">BUKO</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-12-prod.akamaized.net/out/u/dr_cartoonnetworkhd.mpd" 
-    data-key="a2d1f552ff9541558b3296b5a932136b:cdd48fa884dc0c3a3f85aeebca13d444">
-    <img src="http://schedulesdirect-api20141201-logos.s3.dualstack.us-east-1.amazonaws.com/stationLogos/s12131_dark_360w_270h.png" alt="CARTOON NETWORK">
-    <span class="channel-name">CARTOON NETWORK</span>
-</div>
-
-<div class="channel-item" data-source="https://cnvg.katir.workers.dev/1125/manifest.mpd" 
-    data-key="31363232313038303239323838303638:7768354e65797950397a6c566d356256">
-    <img src="https://i.imgur.com/MT0ONJq.png" alt="CARTOONITO">
-    <span class="channel-name">CARTOONITO</span>
-</div>
-
-<div class="channel-item" data-source="https://cnvg.katir.workers.dev/1244/manifest.mpd" 
-    data-key="31363331313938313138383033383733:395334474d7735663579353235453534">
-    <img src="https://i.imgur.com/jKBBBOJ.png" alt="CELESTIAL CLASSIC MOVIES">
-    <span class="channel-name">CELESTIAL CLASSIC MOVIES</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1077/manifest.mpd" 
-    data-key="31363230383933303132303032303231:6b5058557254355845335a6e63737030">
-    <img src="https://i.imgur.com/18mk5Lw.png" alt="CELESTIAL MOVIES PINOY">
-    <span class="channel-name">CELESTIAL MOVIES PINOY</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1283/manifest.mpd" 
-    data-key="31363331363736373234333532363730:684b6853695333444a6b345579376a61">
-    <img src="https://i.imgur.com/vCrXbKk.png" alt="CINEMA ONE">
-    <span class="channel-name">CINEMA ONE</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1108/manifest.mpd" 
-    data-key="31363232303137333630323534393638:63547a3159507a7036314e3357436c7a">
-    <img src="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/united-states/cinemax-us.png" alt="CINEMA MAX">
-    <span class="channel-name">CINEMA MAX</span>
-</div>
-
-<div class="channel-item" data-source="https://cnvg.katir.workers.dev/1158/manifest.mpd" 
-    data-key="31363233303438363730383939353239:356c3450446f61674435646b36563675">
-    <img src="https://i.imgur.com/KJ2eCX0.png" alt="CINEMA WORLD">
-    <span class="channel-name">CINEMA WORLD</span>
-</div>
-
-<div class="channel-item" data-source="https://cdn-ue1-prod.tsv2.amagi.tv/linear/amg01006-abs-cbn-cinemo-dash-abscbnono/46c894cf-278f-4abd-84b2-cede62b1e1cb/index.mpd" 
-    data-key="aa8aebe35ccc4541b7ce6292efcb1bfb:aab1df109d22fc5d7e3ec121ddf24e5f">
-    <img src="https://i.imgur.com/PccIMu9.png" alt="CINEMO">
-    <span class="channel-name">CINEMO</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1073/manifest.mpd" 
-    data-key="31363230383933303132303032313231:6b5058557254355845335a6e63737030">
-    <img src="http://schedulesdirect-api20141201-logos.s3.dualstack.us-east-1.amazonaws.com/stationLogos/s58646_dark_360w_270h.png" alt="CNN INTERNATIONAL">
-    <span class="channel-name">CNN INTERNATIONAL</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1144/manifest.mpd" 
-    data-key="31363232353335353435353432363238:684b3276585a37386130763047346a54">
-    <img src="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/crime-and-investigation-us.png?raw=true" alt="CRIME + INVESTIGATION">
-    <span class="channel-name">CRIME + INVESTIGATION</span>
-</div>
-
-<div class="channel-item" data-source="https://cache1.zapitv.com/live/eds_c2/comedy_central/dash_live_enc/comedy_central.mpd" 
-    data-key="f8757de5a495ce5db4893c2eefc11e58:d8309cd9fa8c286f277b4cb9841d7bd2">
-    <img src="http://schedulesdirect-api20141201-logos.s3.dualstack.us-east-1.amazonaws.com/stationLogos/s10149_dark_360w_270h.png" alt="COMEDY CENTRAL">
-    <span class="channel-name">COMEDY CENTRAL</span>
-</div>
-            <div class="channel-item" data-source="https://cnvg.katir.workers.dev/1194/manifest.mpd" 
-    data-key="31363233323330323736303433313938:6774487273654e4b313631333258706f">
-    <img src="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/united-states/discovery-channel-us.png" alt="DISCOVERY CHANNEL">
-    <span class="channel-name">DISCOVERY CHANNEL</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/cg_dreamworks_hd1.mpd" 
-    data-key="4ab9645a2a0a47edbd65e8479c2b9669:8cb209f1828431ce9b50b593d1f44079">
-    <img src="https://i.imgur.com/Q9k7Lxe.png" alt="DREAMWORKS">
-    <span class="channel-name">DREAMWORKS</span>
-</div>
-
-<div class="channel-item" data-source="https://vision.seesie.workers.dev/fight-sports" 
-    data-key="d2159ffe3be22ed4916a6abe4d58d265:3e4efcec08d5d5c18a403b7048a43638">
-    <img src="https://i.imgur.com/QCby12a.png" alt="FIGHT SPORTS">
-    <span class="channel-name">FIGHT SPORTS</span>
-</div>
-
-<div class="channel-item" data-source="https://cnvg.katir.workers.dev/1093/manifest.mpd" 
-    data-key="31363231383438333031323033393138:38694e34324d543478316b7455753437">
-    <img src="https://i.imgur.com/Tv5Sixt.png" alt="GMA 7">
-    <span class="channel-name">GMA 7</span>
-</div>
-
-<div class="channel-item" data-source="https://amg01006-abs-cbn-abscbn-gma-x7-dash-abscbnono-dzsx9.amagi.tv/index.mpd" 
-    data-key="c95ed4c44b0b4f7fa1c6ebbbbaab21a1:47635b8e885e19f2ccbdff078c207058">
-    <img src="https://i.imgur.com/b98ULOT.png" alt="GMA PINOY TV">
-    <span class="channel-name">GMA PINOY TV</span>
-</div>
-
-<div class="channel-item" data-source="https://cnvg.katir.workers.dev/1143/manifest.mpd" 
-    data-key="31363232353335323435353337353331:35416a68643065697575493337566135">
-    <img src="https://i.imgur.com/eP7CZWj.png" alt="GTV">
-    <span class="channel-name">GTV</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1152/manifest.mpd" 
-    data-key="31363233303437353134383939313936:686e36454a54544d3930343749713333">
-    <img src="https://i.imgur.com/uAWwGtF.png" alt="HALLYPOP">
-    <span class="channel-name">HALLYPOP</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1065/manifest.mpd" 
-    data-key="31363230383830323639303031323938:715a36614f62445635304852794b3676">
-    <img src="http://schedulesdirect-api20141201-logos.s3.dualstack.us-east-1.amazonaws.com/stationLogos/s10240_dark_360w_270h.png" alt="HBO">
-    <span class="channel-name">HBO</span>
-</div>
-            <div class="channel-item" data-source="https://qp-pldt-live-grp-06-prod.akamaized.net/out/u/cg_moonbug_kids_sd.mpd" 
-    data-key="0bf00921bec94a65a124fba1ef52b1cd:0f1488487cbe05e2badc3db53ae0f29f">
-    <img src="https://i.imgur.com/BaNRhGq.png" alt="MOONBUG">
-    <span class="channel-name">MOONBUG</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1245/manifest.mpd" 
-    data-key="31363331313938383834383134323536:387938463676644f7141503474507435">
-    <img src="https://i.imgur.com/Kh8KtXK.png" alt="MOTORVISION+">
-    <span class="channel-name">MOTORVISION+</span>
-</div>
-
-<div class="channel-item" data-source="https://cache3.zapitv.com/live/eds_c2/mtv_espana/dash_live_enc/mtv_espana.mpd" 
-    data-key="10f86eedfa603133e035c4c64226dd6b:1678761258b8a16d5d5b9241bd647536">
-    <img src="http://schedulesdirect-api20141201-logos.s3.dualstack.us-east-1.amazonaws.com/stationLogos/s10986_dark_360w_270h.png" alt="MTV">
-    <span class="channel-name">MTV</span>
-</div>
-
-<div class="channel-item" data-source="https://v4-vno-j13-cdn-01.live.cdn.cgates.lt/live/dash/560701/index.mpd" 
-    data-key="1041d72f861c4e60a87a4e828250ded6:c75b1640bc83ec0c653902a775e5bb1a">
-    <img src="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/mtv-live-us.png?raw=true" alt="MTV LIVE">
-    <span class="channel-name">MTV LIVE</span>
-</div>
-
-<div class="channel-item" data-source="https://cnvg.katir.workers.dev/1252/manifest.mpd" 
-    data-key="31363331363736333231333532323639:396c467233356c357355497565533536">
-    <img src="https://i.imgur.com/nbQPqUp.png" alt="MYX">
-    <span class="channel-name">MYX</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1064/manifest.mpd" 
-    data-key="31363230383932393934303031373831:36393034643046463738544b77676768">
-    <img src="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/nba-tv-us.png?raw=true" alt="NBA TV PHILIPPINES">
-    <span class="channel-name">NBA TV PHILIPPINES</span>
-</div>
-            <div class="channel-item" data-source="https://ni.bobay.workers.dev/1090/manifest.mpd" 
-    data-key="31363231393131363337323232353030:56783536726130576e5a4171564c3741">
-    <img src="https://i.imgur.com/diHIxJr.png" alt="NET 25">
-    <span class="channel-name">NET 25</span>
-</div>
-
-<div class="channel-item" data-source="https://cnvg.katir.workers.dev/1313/manifest.mpd" 
-    data-key="31363639393633373136353837383139:767561696f37546667306c7366623536">
-    <img src="http://schedulesdirect-api20141201-logos.s3.dualstack.us-east-1.amazonaws.com/stationLogos/s11006_dark_360w_270h.png" alt="NICKELODEON">
-    <span class="channel-name">NICKELODEON</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1215/manifest.mpd" 
-    data-key="31363233343133343534323335373438:75467735704170524847774a63594361">
-    <img src="http://schedulesdirect-api20141201-logos.s3.dualstack.us-east-1.amazonaws.com/stationLogos/s19211_dark_360w_270h.png" alt="NICK JR.">
-    <span class="channel-name">NICK JR.</span>
-</div>
-
-<div class="channel-item" data-source="https://v4-vno-j13-cdn-01.live.cdn.cgates.lt/live/dash/561208/index.mpd" 
-    data-key="3161c6c45076419fbbc333c277a22f65:18827aad7e2e79e526f529fd5027cb47">
-    <img src="https://github.com/tv-logo/tv-logos/blob/main/countries/united-states/nick-toons-us.png?raw=true" alt="NICKTOONS">
-    <span class="channel-name">NICKTOONS</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-04-prod.akamaized.net/out/u/onenews_hd1.mpd" 
-    data-key="d39eb201ae494a0b98583df4d110e8dd:6797066880d344422abd3f5eda41f45f">
-    <img src="https://i.imgur.com/Y1yYuiy.png" alt="ONE NEWS">
-    <span class="channel-name">ONE NEWS</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-04-prod.akamaized.net/out/u/oneph_sd.mpd" 
-    data-key="92834ab4a7e1499b90886c5d49220e46:a7108d9a6cfcc1b7939eb111daf09ab3">
-    <img src="https://i.imgur.com/zwiG3v8.png" alt="ONE PH">
-    <span class="channel-name">ONE PH</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_onesports_hd.mpd" 
-    data-key="53c3bf2eba574f639aa21f2d4409ff11:3de28411cf08a64ea935b9578f6d0edd">
-    <img src="https://i.imgur.com/LvswLsB.png" alt="ONE SPORTS">
-    <span class="channel-name">ONE SPORTS</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-03-prod.akamaized.net/out/u/cg_onesportsplus_hd1.mpd" 
-    data-key="322d06e9326f4753a7ec0908030c13d8:1e3e0ca32d421fbfec86feced0efefda">
-    <img src="https://i.imgur.com/Z6spem1.png" alt="ONE SPORTS+">
-    <span class="channel-name">ONE SPORTS+</span>
-</div>
-            <div class="channel-item" data-source="https://qp-pldt-live-grp-01-prod.akamaized.net/out/u/cg_pbarush_hd1.mpd" 
-    data-key="76dc29dd87a244aeab9e8b7c5da1e5f3:95b2f2ffd4e14073620506213b62ac82">
-    <img src="https://i.imgur.com/S0Y9S7x.png" alt="PBA RUSH">
-    <span class="channel-name">PBA RUSH</span>
-</div>
-
-<div class="channel-item" data-source="https://cnvg.katir.workers.dev/1078/manifest.mpd" 
-    data-key="31363230393830323336303039323834:7676746b584436514331503256784654">
-    <img src="https://i.imgur.com/g2WCFG2.png" alt="PBO">
-    <span class="channel-name">PBO</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/cg_ptv4_sd.mpd" 
-    data-key="71a130a851b9484bb47141c8966fb4a3:ad1f003b4f0b31b75ea4593844435600">
-    <img src="https://i.imgur.com/san5QRy.png" alt="PILIPINAS TV">
-    <span class="channel-name">PILIPINAS TV</span>
-</div>
-
-<div class="channel-item" data-source="https://cnvg.katir.workers.dev/1127/manifest.mpd" 
-    data-key="31363232313130313238323933363838:3243794139594e6435434b517a497070">
-    <img src="https://i.imgur.com/ZwWQxaT.png" alt="PREMIER FOOTBALL">
-    <span class="channel-name">PREMIER FOOTBALL</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1135/manifest.mpd" 
-    data-key="31363232313130333638323933383631:7031306148395845396e32374369485a">
-    <img src="https://i.imgur.com/DrxR9FO.png" alt="PREMIER SPORTS">
-    <span class="channel-name">PREMIER SPORTS</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1204/manifest.mpd" 
-    data-key="31363233383335303430363337303331:4444313067453278686a4b6b7030494b">
-    <img src="https://i.imgur.com/wq3xALC.png" alt="PREMIER SPORTS 2">
-    <span class="channel-name">PREMIER SPORTS 2</span>
-</div>
-
-<div class="channel-item" data-source="https://vision.seesie.workers.dev/rock-action" 
-    data-key="b9c123fbf587e6524b2706bd960c7f67:d2aaac6845b33627cdce1272feac5acc">
-    <img src="https://i.imgur.com/dG0piCF.png" alt="ROCK ACTION">
-    <span class="channel-name">ROCK ACTION</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1326/manifest.mpd" 
-    data-key="31363735313536353539343439373937:535a566358303032677658776a413138">
-    <img src="https://i.imgur.com/ZxLMOwB.png" alt="ROCK ENTERTAINMENT">
-    <span class="channel-name">ROCK ENTERTAINMENT</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-03-prod.akamaized.net/out/u/cnn_rptv_prod_hd.mpd" 
-    data-key="1917f4caf2364e6d9b1507326a85ead6:a1340a251a5aa63a9b0ea5d9d7f67595">
-    <img src="https://i.imgur.com/4t1jghm.png" alt="RPTV">
-    <span class="channel-name">RPTV</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-06-prod.akamaized.net/out/u/cg_sari_sari_sd.mpd" 
-    data-key="0a7ab3612f434335aa6e895016d8cd2d:b21654621230ae21714a5cab52daeb9d">
-    <img src="https://i.imgur.com/kGFQaAj.png" alt="SARI SARI">
-    <span class="channel-name">SARI SARI</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1243/manifest.mpd" 
-    data-key="31363331313738363633373739363234:5436395534576f7638744a43356d336e">
-    <img src="https://i.imgur.com/UoCiY3l.png" alt="SOLAR FLIX">
-    <span class="channel-name">SOLAR FLIX</span>
-</div>
-            <div class="channel-item" data-source="https://qp-pldt-live-grp-06-prod.akamaized.net/out/u/cg_tapactionflix_hd1.mpd" 
-    data-key="bee1066160c0424696d9bf99ca0645e3:f5b72bf3b89b9848de5616f37de040b7">
-    <img src="https://i.imgur.com/Fh0hspP.png" alt="TAP ACTION FLIX">
-    <span class="channel-name">TAP ACTION FLIX</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-06-prod.akamaized.net/out/u/cg_tapmovies_hd1.mpd" 
-    data-key="71cbdf02b595468bb77398222e1ade09:c3f2aa420b8908ab8761571c01899460">
-    <img src="https://i.imgur.com/Zca4Aze.png" alt="TAP MOVIES">
-    <span class="channel-name">TAP MOVIES</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1151/manifest.mpd" 
-    data-key="31363233303437333337383938393931:4344324b7661386b4579323633343645">
-    <img src="https://i.imgur.com/cZ99ro6.png" alt="TAP SPORTS">
-    <span class="channel-name">TAP SPORTS</span>
-</div>
-
-<div class="channel-item" data-source="https://d14c00opfjb50c.cloudfront.net/out/v1/0fa4eb67579d41cca4ed146c93aa855f/index.mpd" 
-    data-key="47c093e0c9fd4f80839a0337da3dd876:50547394045b3d047dc7d92f57b5fb33">
-    <img src="https://i.imgur.com/PreQre9.png" alt="TELERADYO SERBISYO">
-    <span class="channel-name">TELERADYO SERBISYO</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1253/manifest.mpd" 
-    data-key="31363331313938333434383133383337:32776734365267686977387049356d48">
-    <img src="https://i.imgur.com/SyZp07q.png" alt="THRILL">
-    <span class="channel-name">THRILL</span>
-</div>
-
-<div class="channel-item" data-source="https://ni.bobay.workers.dev/1181/manifest.mpd" 
-    data-key="31363233323239363937303432353735:39574d333277376f336d374244323159">
-    <img src="https://i.imgur.com/5EMJlbG.png" alt="TLC">
-    <span class="channel-name">TLC</span>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>BURNEK TV</title>
+        <script src="shaka-player.compiled.js.download"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.min.css">
+    </head>
+    <body>
+        <div class="channel-list-container">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search channels..." onkeyup="searchChannels()">
             </div>
-            <div class="channel-item" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_tagalogmovie.mpd" 
-    data-key="96701d297d1241e492d41c397631d857:ca2931211c1a261f082a3a2c4fd9f91b">
-    <img src="https://i.imgur.com/54f9r5A.png" alt="TMC">
-    <span class="channel-name">TMC</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-08-prod.akamaized.net/out/u/truefm_tv.mpd" 
-    data-key="0559c95496d44fadb94105b9176c3579:40d8bb2a46ffd03540e0c6210ece57ce">
-    <img src="https://i.imgur.com/TehkYdU.png" alt="TRUE FM TV">
-    <span class="channel-name">TRUE FM TV</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd" 
-    data-key="2615129ef2c846a9bbd43a641c7303ef:07c7f996b1734ea288641a68e1cfdc4d">
-    <img src="https://i.imgur.com/lyjZUke.png" alt="TV 5">
-    <span class="channel-name">TV 5</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-09-prod.akamaized.net/out/u/cg_tvnpre.mpd" 
-    data-key="e1bde543e8a140b38d3f84ace746553e:b712c4ec307300043333a6899a402c10">
-    <img src="https://i.imgur.com/XAmlezy.png" alt="TVN">
-    <span class="channel-name">TVN</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-07-prod.akamaized.net/out/u/cg_tvnmovie.mpd" 
-    data-key="2e53f8d8a5e94bca8f9a1e16ce67df33:3471b2464b5c7b033a03bb8307d9fa35">
-    <img src="https://i.imgur.com/gaEbxTn.png" alt="TVN MOVIES">
-    <span class="channel-name">TVN MOVIES</span>
-</div>
-
-<div class="channel-item" data-source="https://qp-pldt-live-grp-04-prod.akamaized.net/out/u/cg_uaap_cplay_sd.mpd" 
-    data-key="95588338ee37423e99358a6d431324b9:6e0f50a12f36599a55073868f814e81e">
-    <img src="https://i.imgur.com/v4C1OCV.png" alt="UAAP">
-    <span class="channel-name">UAAP</span>
-</div>
-
-<div class="channel-item" data-source="https://unifi-live07.secureswiftcontent.com/UnifiHD/live11.mpd" 
-    data-key="b6bd9264f24444c9a1bea842ba0bc33d:00c737b67ab210796510463a99b0b00d">
-    <img src="https://i.imgur.com/3ZdS66y.png" alt="UNIFI">
-    <span class="channel-name">UNIFI</span>
-</div>
-            <div class="channel-item" data-source="https://ni.bobay.workers.dev/1091/manifest.mpd" 
-    data-key="31363231393131383734323234313831:7a333137597652656743393372427153">
-    <img src="https://i.imgur.com/HZ5nGqT.png" alt="UNTV">
-    <span class="channel-name">UNTV</span>
-</div>
-            <div class="channel-item" data-source="https://fsly.stream.peacocktv.com/Content/CMAF_OL1-CTR-4s/Live/channel(usa-east)/master.mpd" 
-    data-key="78ab64fa90f137a697743b5dc27b2f96:de4d31c7fc6005ede28abab2a0720a9f">
-    <img src="https://i.imgur.com/pyc6RyR.png" alt="USA EAST">
-    <span class="channel-name">USA EAST</span>
-</div>
-
-<div class="channel-item" data-source="https://cnvg.katir.workers.dev/1079/manifest.mpd" 
-    data-key="31363230393830353534303039353831:506e354374394938446439344b6f3741">
-    <img src="https://i.imgur.com/266guR1.png" alt="VIVA CINEMA">
-    <span class="channel-name">VIVA CINEMA</span>
-</div>
-
-            <div class="channel-item" data-source="https://qp-pldt-live-grp-11-prod.akamaized.net/out/u/dr_warnertvhd.mpd" 
-    data-key="4503cf86bca3494ab95a77ed913619a0:afc9c8f627fb3fb255dee8e3b0fe1d71">
-    <img src="https://i.imgur.com/rFaMDWl.png" alt="WARNER TV">
-    <span class="channel-name">WARNER TV</span>
-</div>
+            <ul id="channel-list">
+                <li class="active">KAPAMILYA CHANNEL</li>
+                <li>KAPAMILYA CHANNEL HD</li>
+                <li>GMA 7</li>
+                <li>GTV</li>
+                <li>TV5</li>
+                <li>ONE SPORTS</li>
+                <li>PTV</li>
+                <li>IBC 13</li>
+                <li>NET25</li>
+                <li>RPTV</li>
+                <li>A2Z</li>
+                <li>ALL TV</li>
+                <li>RJ DIGITV</li>
+                <li>ONE NEWS</li>
+                <li>ONE PH</li>
+                <li>TRUE FM TV</li>
+                <li>ANC</li>
+                <li>TELERADYO SERBISYO</li>
+                <li>BILYONARYO NEWS CHANNEL</li>
+                <li>RADYO BANDIDO TV</li>
+                <li>ALIW CHANNEL 23</li>
+                <li>DZRH TV</li>
+                <li>TVUP</li>
+                <li>UAAP VARSITY</li>
+                <li>GMA PINOY TV</li>
+                <li>KNOWLEDGE CHANNEL</li>
+                <li>DREAMWORKS TAGALIZED</li>
+                <li>JUNGO TV PINOY</li>
+                <li>SOLARFLIX</li>
+                <li>CINEMA ONE</li>
+                <li>CINEMO!</li>
+                <li>JEEPNEY TV</li>
+                <li>PBO</li>
+                <li>VIVA CINEMA</li>
+                <li>CELESTIAL MOVIES PINOY</li>
+                <li>TAGALIZED MOVIE CHANNEL</li>
+                <li>TVN MOVIES PINOY</li>
+                <li>SARI-SARI</li>
+                <li>BUKO CHANNEL</li>
+                <li>CNN</li>
+                <li>BLOOMBERG</li>
+                <li>FOX NEWS</li>
+                <li>AL JAZEERA</li>
+                <li>BBC NEWS</li>
+                <li>CNBC</li>
+                <li>RUSSIA TODAY</li>
+                <li>DEUTSCHE WELLE</li>
+                <li>EURONEWS</li>
+                <li>VOICE OF AMERICA</li>
+                <li>SEA TODAY</li>
+                <li>CHANNEL NEWS ASIA</li>
+                <li>FRANCE 24</li>
+                <li>TRT WORLD</li>
+                <li>WION</li>
+                <li>SKY NEWS</li>
+                <li>CGTN</li>
+                <li>USA TODAY</li>
+                <li>KIX</li>
+                <li>THRILL</li>
+                <li>STAR CHANNEL</li>
+                <li>STAR WORLD</li>
+                <li>FX</li>
+                <li>STAR MOVIES</li>
+                <li>STAR ACTION</li>
+                <li>HITS</li>
+                <li>HITS MOVIES</li>
+                <li>HITS NOW</li>
+                <li>ROCK ENTERTAINMENT</li>
+                <li>ROCK ACTION</li>
+                <li>CALLE 13</li>
+                <li>SYFY</li>
+                <li>HBO</li>
+                <li>CINEMAX</li>
+                <li>HBO HITS</li>
+                <li>HBO SIGNATURE</li>
+                <li>HBO FAMILY</li>
+                <li>WARNER TV</li>
+                <li>TURNER CLASSIC MOVIES</li>
+                <li>AXN</li>
+                <li>AXN MOVIES</li>
+                <li>COMEDY CENTRAL</li>
+                <li>PARAMOUNT NETWORK</li>
+                <li>TAP TV</li>
+                <li>TAP EDGE</li>
+                <li>TAP MOVIES</li>
+                <li>TAP ACTION FLIX</li>
+                <li>CINEMAWORLD</li>
+                <li>MTV</li>
+                <li>GALAXY</li>
+                <li>GALAXY PREMIUM</li>
+                <li>ORIGINALS</li>
+                <li>CINEEDGE</li>
+                <li>SUPERRIX</li>
+                <li>UNIQUES</li>
+                <li>ASTRO SHOWCASE</li>
+                <li>ASTRO BOO</li>
+                <li>SCREAMFLIX</li>
+                <li>MBC ACTION</li>
+                <li>MBC MAX</li>
+                <li>LOTUS MACAU</li>
+                <li>TVN</li>
+                <li>TVN MOVIES</li>
+                <li>ONE</li>
+                <li>K-PLUS</li>
+                <li>ANIMAX</li>
+                <li>ANIME X HIDIVE</li>
+                <li>BS10 STAR CHANNEL</li>
+                <li>BS FUJI</li>
+                <li>BS NIPPON</li>
+                <li>NHK WORLD JAPAN</li>
+                <li>NHK BS</li>
+                <li>NHK WORLD PREMIUM</li>
+                <li>KBS WORLD</li>
+                <li>KBS KOREA</li>
+                <li>ARIRANG</li>
+                <li>LIVING ASIA CHANNEL</li>
+                <li>DISCOVERY ASIA</li>
+                <li>TV5MONDE ASIE</li>
+                <li>TVE</li>
+                <li>ABC AUSTRALIA</li>
+                <li>CELESTIAL MOVIES</li>
+                <li>CCM</li>
+                <li>CCTV4</li>
+                <li>CGTN DOCUMENTARY</li>
+                <li>DAAI TV</li>
+                <li>PHOENIX CHINESE</li>
+                <li>IQIYI</li>
+                <li>CTV</li>
+                <li>TVBS ASIA</li>
+                <li>XINGKONG</li>
+                <li>HUNAN TV</li>
+                <li>TVB CLASSIC</li>
+                <li>TVB JADE</li>
+                <li>TVB XING HE</li>
+                <li>CTI ASIA</li>
+                <li>MYX</li>
+                <li>MTV LIVE</li>
+                <li>MTV HITS</li>
+                <li>MTV 80S</li>
+                <li>MTV 90S</li>
+                <li>MTV 00S</li>
+                <li>ROCK TV MANILA</li>
+                <li>FRONT ROW CHANNEL</li>
+                <li>HALLYPOP</li>
+                <li>KPOP TV PLAY</li>
+                <li>MEZZO LIVE</li>
+                <li>TRACE URBAN</li>
+                <li>TRACE UK</li>
+                <li>STINGRAY CLASSICA</li>
+                <li>STINGRAY CMUSIC</li>
+                <li>STINGRAY ICONCERTS</li>
+                <li>DISCOVERY CHANNEL</li>
+                <li>ANIMAL PLANET</li>
+                <li>DISCOVERY SCIENCE</li>
+                <li>FOOD NETWORK</li>
+                <li>HGTV</li>
+                <li>TLC</li>
+                <li>DMAX</li>
+                <li>INVESTIGATION DISCOVERY</li>
+                <li>TRAVEL CHANNEL</li>
+                <li>ASIAN FOOD NETWORK</li>
+                <li>DISCOVERY FAMILY</li>
+                <li>NATIONAL GEOGRAPHIC</li>
+                <li>NATIONAL GEOGRAPHIC WILD</li>
+                <li>GLOBAL TREKKER</li>
+                <li>LOVE NATURE</li>
+                <li>BBC EARTH</li>
+                <li>BBC LIFESTYLE</li>
+                <li>HISTORY</li>
+                <li>HISTORY2</li>
+                <li>CRIME + INVESTIGATION</li>
+                <li>LIFETIME</li>
+                <li>OUTDOOR CHANNEL</li>
+                <li>AMC BREAK</li>
+                <li>AMC CRIME</li>
+                <li>FASHION TV</li>
+                <li>METRO CHANNEL</li>
+                <li>DISNEY CHANNEL</li>
+                <li>DISNEY JR.</li>
+                <li>DISNEY XD</li>
+                <li>CARTOON NETWORK SD</li>
+                <li>CARTOON NETWORK HD</li>
+                <li>CARTOONITO</li>
+                <li>BOING</li>
+                <li>DREAMWORKS</li>
+                <li>NICKELODEON</li>
+                <li>NICK JR</li>
+                <li>NICKTOONS</li>
+                <li>CBEEBIES</li>
+                <li>ZOOMOO</li>
+                <li>MOONBUG</li>
+                <li>BUDDY STAR</li>
+                <li>JIMJAM</li>
+                <li>DA VINCI LEARNING</li>
+                <li>PBS KIDS</li>
+                <li>PBA RUSH</li>
+                <li>ONE SPORTS PLUS</li>
+                <li>NBA TV PHILIPPINES</li>
+                <li>TAP SPORTS</li>
+                <li>PREMIER SPORTS</li>
+                <li>PREMIER SPORTS 2</li>
+                <li>PREMIER FOOTBALL</li>
+                <li>BEIN SPORTS 1</li>
+                <li>BEIN SPORTS 2</li>
+                <li>BEIN SPORTS 3</li>
+                <li>EUROSPORT</li>
+                <li>SPOTV</li>
+                <li>SPOTV2</li>
+                <li>GOLF CHANNEL</li>
+                <li>TRACE SPORT STARS</li>
+                <li>FIGHT SPORTS</li>
+                <li>PREMIER SPORTS ASIA</li>
+                <li>MOTORVISION TV</li>
+                <li>SOLAR SPORTS</li>
+                <li>UNIFI SPORTS</li>
+                <li>NBA TV</li>
+                <li>W-SPORT</li>
+                <li>TNT SPORTS 1</li>
+                <li>TNT SPORTS 2</li>
+                <li>TNT SPORTS 3</li>
+                <li>TNT SPORTS 4</li>
+                <li>EXTREME SPORTS</li>
+                <li>GO3 SPORT 1</li>
+                <li>GO3 SPORT 2</li>
+                <li>GO3 SPORT 3</li>
+                <li>EUROSPORT 1</li>
+                <li>EUROSPORT 2</li>
+                <li>SETANTA SPORTS 1</li>
+                <li>SETANTA SPORTS 2</li>
+                <li>NOVA SPORT 1</li>
+                <li>NOVA SPORT 2</li>
+                <li>SPORT 1</li>
+                <li>SPORT 2</li>
+                <li>AWSN</li>
+                <li>BLACK BELT</li>
+                <li>BILLIARD TV</li>
+                <li>BOXING TV</li>
+                <li>ESR</li>
+                <li>REDBULL TV</li>
+                <li>FITE 24/7</li>
+            </ul>
         </div>
-    </div>
-
-    <script>
-        let player;
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const searchBox = document.getElementById("search-box");
-            const channels = document.querySelectorAll(".channel-item");
-            const videoElement = document.getElementById("video-player");
-            player = new shaka.Player(videoElement);
-
-            searchBox.addEventListener("input", function () {
-                const filter = searchBox.value.toLowerCase();
-                channels.forEach(channel => {
-                    const name = channel.querySelector(".channel-name").textContent.toLowerCase();
-                    channel.style.display = name.includes(filter) ? "flex" : "none";
-                });
-            });
-
-            channels.forEach(channel => {
-                channel.addEventListener("click", function () {
-                    const videoSource = channel.getAttribute("data-source");
-                    const key = channel.getAttribute("data-key");
-                    loadVideo(videoSource, key);
-                });
-            });
-
-            // Auto play first channel
-            if (channels.length > 0) {
-                const firstChannel = channels[0];
-                const firstVideoSource = firstChannel.getAttribute("data-source");
-                const firstKey = firstChannel.getAttribute("data-key");
-                loadVideo(firstVideoSource, firstKey);
-            }
-        });
-
-        // Load the selected video
-        function loadVideo(sourceUrl, key) {
-    const videoElement = document.getElementById('video-player');
-    
-    // Destroy the existing player before creating a new one
-    if (player) {
-        player.destroy().then(() => {
-            console.log("Previous player destroyed. Loading new channel...");
-            initializePlayer(videoElement, sourceUrl, key); // Reinitialize player with updated UI config
-        }).catch((error) => {
-            console.error("Error destroying previous player: ", error);
-        });
-    } else {
-        initializePlayer(videoElement, sourceUrl, key);
-    }
-}
-
-function initializePlayer(videoElement, sourceUrl, key) {
-    const videoContainer = document.getElementById('video-overlay');
-
-    // Destroy existing UI if it exists
-    if (videoContainer['ui']) {
-        videoContainer['ui'].destroy();
-    }
-
-    // Initialize Shaka Player instance
-    const shakaPlayer = new shaka.Player(videoElement);
-    player = shakaPlayer; // Store reference to the player
-
-    // Initialize Shaka UI Overlay
-    const ui = new shaka.ui.Overlay(shakaPlayer, videoContainer, videoElement);
-    videoContainer['ui'] = ui; // Store UI reference for future cleanup
-    
-           // Configure player with DRM (if needed)
-    player.configure({
-        drm: {
-            clearKeys: {
-                [key.split(":")[0]]: key.split(":")[1]
-            }
-        },
-        streaming: {
-            bufferingGoal: 30,
-            retryParameters: { maxAttempts: 5 }
-        }
-    });
-
-    // Apply UI settings after player initialization
-    ui.configure({
-        'controls': false,
-        'seekBar': false,
-        'volumeBar': false,
-        'fullscreenButton': false,
-        'muteButton': false,
-    });
-
-    // Check if Shaka Player is supported in the browser
-    if (shaka.Player.isBrowserSupported()) {
-        player.load(sourceUrl).then(() => {
-            console.log('Video loaded successfully!');
-        }).catch(error => {
-            console.error('Error loading video:', error);
-        });
-    } else {
-        console.error('Shaka Player is not supported in this browser.');
-    }
-}
-        const proxy = "https://your-cloudflare-worker-url.com/?url=";
-        const target = "https://ni.bobay.workers.dev/1216/manifest.mpd";
-
-        fetch(proxy + encodeURIComponent(target))
-            .then(response => response.text())
-            .then(data => console.log(data))
-            .catch(error => console.error(error));
-    </script>
-</body>
+        <script src="channel.js"></script>
+        <script src="script.js"></script>
+    </body>
 </html>
