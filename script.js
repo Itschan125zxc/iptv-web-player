@@ -58,18 +58,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 	
 	
 
-    function populateChannels() {
-        channels.forEach((channel) => {
-            const li = document.createElement('li');
-            li.textContent = channel.name;
-            li.onclick = () => {
-                document.querySelectorAll('.channel-list li').forEach(el => el.classList.remove('active'));
-                li.classList.add('active');
-                loadChannel(channel);
-            };
-            channelListElement.appendChild(li);
-        });
+   function populateChannels() {
+    // Clear existing list before populating
+    channelListElement.innerHTML = '';
+
+    // Track seen channels
+    let seenChannels = new Set();
+
+    // Iterate through the channels in reverse to remove the first occurrence
+    for (let i = channels.length - 1; i >= 0; i--) {
+        if (seenChannels.has(channels[i].name)) {
+            channels.splice(i, 1); // Remove the first occurrence
+        } else {
+            seenChannels.add(channels[i].name);
+        }
     }
+
+    // Populate the cleaned channel list
+    channels.forEach((channel) => {
+        const li = document.createElement('li');
+        li.textContent = channel.name;
+        li.onclick = () => {
+            document.querySelectorAll('.channel-list li').forEach(el => el.classList.remove('active'));
+            li.classList.add('active');
+            loadChannel(channel);
+        };
+        channelListElement.appendChild(li);
+    });
+}
 
     function searchChannels() {
         let input = document.getElementById('searchInput').value.toLowerCase();
