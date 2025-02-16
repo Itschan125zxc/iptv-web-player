@@ -3,8 +3,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const channelListElement = document.getElementById('channelList');
     const videoContainer = document.getElementById('videoContainer');
 
+    if (!shaka.Player.isBrowserSupported()) {
+        alert("Your browser does not support Shaka Player.");
+        return;
+    }
+
     const player = new shaka.Player(videoElement);
-    const ui = new shaka.ui.Overlay(player, videoContainer, videoElement);
+    const ui = new shaka.ui.Overlay(videoElement, videoContainer, player);
     
     videoContainer['ui'] = ui;
 
