@@ -55,31 +55,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert("Error loading channel: " + channel.name);
         }
     }
+	
+	
 
-    // Function to populate channel list
     function populateChannels() {
-        if (!channelListElement) return; // Prevents errors if the element is not found
-
-        channelListElement.innerHTML = ''; // Clears existing list
-
-        console.log("Populating channels. Total:", channels.length);
-
+	channelListElement.innerHTML = ''; // Clears existing list
         channels.forEach((channel) => {
             const li = document.createElement('li');
             li.textContent = channel.name;
-            li.classList.add('channel-item'); // Add a class for easy selection
-
             li.onclick = () => {
                 document.querySelectorAll('.channel-list li').forEach(el => el.classList.remove('active'));
                 li.classList.add('active');
                 loadChannel(channel);
             };
-
             channelListElement.appendChild(li);
         });
     }
 
-    // Function to filter channels by search
     function searchChannels() {
         let input = document.getElementById('searchInput').value.toLowerCase();
         document.querySelectorAll('.channel-list li').forEach(channel => {
@@ -87,6 +79,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Expose search function globally
+    populateChannels();
     window.searchChannels = searchChannels;
 });
