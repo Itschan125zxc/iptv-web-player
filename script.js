@@ -53,17 +53,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function populateChannels() {
-        channels.forEach((channel) => {
-            const li = document.createElement('li');
-            li.textContent = channel.name;
-            li.onclick = () => {
-                document.querySelectorAll('.channel-list li').forEach(el => el.classList.remove('active'));
-                li.classList.add('active');
-                loadChannel(channel);
-            };
-            channelListElement.appendChild(li);
-        });
-    }
+    channelListElement.innerHTML = ''; // Clears existing list before populating again
+    channels.forEach((channel) => {
+        const li = document.createElement('li');
+        li.textContent = channel.name;
+        li.onclick = () => {
+            document.querySelectorAll('.channel-list li').forEach(el => el.classList.remove('active'));
+            li.classList.add('active');
+            loadChannel(channel);
+        };
+        channelListElement.appendChild(li);
+    });
+}
 
     function searchChannels() {
         let input = document.getElementById('searchInput').value.toLowerCase();
