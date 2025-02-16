@@ -1,17 +1,29 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const videoElement = document.getElementById('video');
+    const pipButton = document.getElementById('pipButton');
     const channelListElement = document.getElementById('channelList');
     const videoContainer = document.getElementById('videoContainer');
 
-    if (!shaka.Player.isBrowserSupported()) {
-        alert("Your browser does not support Shaka Player.");
-        return;
+    if (!document.pictureInPictureEnabled) {
+        pipButton.style.display = 'none';
     }
+
+    pipButton.addEventListener('click', () => {
+        if (document.pictureInPictureElement) {
+            document.exitPictureInPicture();
+        } else {
+            videoElement.requestPictureInPicture().catch(error => {
+                console.error('Error entering PiP mode: ', error);
+            });
+        }
+    });
 
     const player = new shaka.Player(videoElement);
     const ui = new shaka.ui.Overlay(player, videoContainer, videoElement);
-    
-    videoContainer['ui'] = ui;
+
+    ui.configure({
+        'overflowMenuButtons': ['quality', 'language', 'captions', 'playback_rate', 'cast']
+    });
 
     async function loadChannel(channel) {
         videoElement.style.display = "block";
@@ -65,3 +77,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+function ctrlShiftKey(e, keyCode) {
+    return e.ctrlKey && e.shiftKey && e.keyCode === keyCode.charCodeAt(0);
+    }
+
+document.onkeydown = (e) => {
+    if (
+        e.keyCode === 123 ||
+        ctrlShiftKey(e, 'I') ||
+        ctrlShiftKey(e, 'J') ||
+        ctrlShiftKey(e, 'C') ||
+        (e.ctrlKey && e.keyCode === 'U'.charCodeAt(0))
+        )
+        return false;
+};
