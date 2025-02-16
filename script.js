@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const player = new shaka.Player(videoElement);
-    const ui = new shaka.ui.Overlay(videoElement, videoContainer, player);
+    const ui = new shaka.ui.Overlay(player, videoContainer, videoElement);
     
     videoContainer['ui'] = ui;
 
