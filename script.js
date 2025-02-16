@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             li.classList.add('channel-item'); // Add a class for easy selection
 
             li.onclick = () => {
-                document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.channel-list li').forEach(el => el.classList.remove('active'));
                 li.classList.add('active');
                 loadChannel(channel);
             };
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Function to filter channels by search
     function searchChannels() {
         let input = document.getElementById('searchInput').value.toLowerCase();
-        document.querySelectorAll('.channel-item').forEach(channel => {
+        document.querySelectorAll('.channel-list li').forEach(channel => {
             channel.style.display = channel.textContent.toLowerCase().includes(input) ? "list-item" : "none";
         });
     }
